@@ -27,17 +27,13 @@ RUN tar -xzf /tmp/devops-demo-1.1.tar.gz -C /var/www/html && \
     rm /tmp/devops-demo-1.1.tar.gz
 
 # 4. Set environment variables for MySQL config (customize as needed)
-ENV DB_HOST=172.17.0.2 \
-    DB_USER=root \
-    DB_PASS=root \
-    DB_NAME=devopsdb \
-    ENV_NAME=Dev
+ENV ENV_NAME=Dev
 
 # 5. Replace placeholders in config.ini
 RUN sed -i \
     -e "s/DBHOST/${DB_HOST}/g" \
     -e "s/SQLUSER/${DB_USER}/g" \
-    -e "s/SQLPASSWORD/${DB_PASS}/g" \
+    -e "s/SQLPASSWORD/${MYSQL_ROOT_PASSWORD}/g" \
     -e "s/SQLDBNAME/${DB_NAME}/g" \
     -e "s/ENVNAME/${ENV_NAME}/g" \
     /var/www/html/config.ini

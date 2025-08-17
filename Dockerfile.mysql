@@ -5,7 +5,7 @@ FROM mysql:8.0
 ENV MYSQL_DATABASE=devopsdb
 
 # Copy the SQL file into the container's init folder
-COPY devops-demo-1.1.sql /docker-entrypoint-initdb.d/
+COPY backup.sql /docker-entrypoint-initdb.d/
 
 # Expose MySQL port
 EXPOSE 3306
