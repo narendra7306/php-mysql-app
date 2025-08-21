@@ -2,7 +2,8 @@ pipeline {
     agent any
 
     environment {
-        SONARQUBE_ENV = 'MySonarQube'  
+        SONARQUBE_ENV = 'MySonarQube'
+        SCANNER_HOME = tool 'SonarScanner'  
     }
 
     stages {
@@ -17,17 +18,15 @@ pipeline {
         stage('SonarQube Scan') {
             steps {
                 withSonarQubeEnv("${SONARQUBE_ENV}") {
-                    withSonarQubeScannerInstallation('SonarScanner') {
-                        sh """
-                            sonar-scanner \
-                              -Dsonar.projectKey=my-php-app \
-                              -Dsonar.projectName="My PHP Application" \
-                              -Dsonar.sources=. \
-                              -Dsonar.php.coverage.reportPaths=coverage.xml \
-                              -Dsonar.host.url=${SONAR_HOST_URL} \
-                              -Dsonar.login=${SONAR_AUTH_TOKEN}
-                        """
-                    }    
+                    sh """
+                        ${SCANNER_HOME}/bin/sonar-scanner \
+                          -Dsonar.projectKey=my-php-app \
+                          -Dsonar.projectName="My PHP Application" \
+                          -Dsonar.sources=. \
+                          -Dsonar.php.coverage.reportPaths=coverage.xml \
+                          -Dsonar.host.url=${SONAR_HOST_URL} \
+                          -Dsonar.login=${SONAR_AUTH_TOKEN}
+                    """    
                 }
             }
         }
