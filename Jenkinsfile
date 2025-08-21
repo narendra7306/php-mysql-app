@@ -17,15 +17,17 @@ pipeline {
         stage('SonarQube Scan') {
             steps {
                 withSonarQubeEnv("${SONARQUBE_ENV}") {
-                    sh """
-                        sonar-scanner \
-                          -Dsonar.projectKey=my-php-app \
-                          -Dsonar.projectName="My PHP Application" \
-                          -Dsonar.sources=. \
-                          -Dsonar.php.coverage.reportPaths=coverage.xml \
-                          -Dsonar.host.url=${SONAR_HOST_URL} \
-                          -Dsonar.login=${SONAR_AUTH_TOKEN}
-                    """
+                    withSonarQubeScannerInstallation('SonarScanner') {
+                        sh """
+                            sonar-scanner \
+                              -Dsonar.projectKey=my-php-app \
+                              -Dsonar.projectName="My PHP Application" \
+                              -Dsonar.sources=. \
+                              -Dsonar.php.coverage.reportPaths=coverage.xml \
+                              -Dsonar.host.url=${SONAR_HOST_URL} \
+                              -Dsonar.login=${SONAR_AUTH_TOKEN}
+                        """
+                    }    
                 }
             }
         }
