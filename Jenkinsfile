@@ -26,7 +26,7 @@ pipeline {
                         sonar-scanner \
                           -Dsonar.projectKey=my-php-app \
                           -Dsonar.sources=. \
-                          -Dsonar.host.url=$SONAR_HOST_URL
+                          -Dsonar.host.url=$SONAR_HOST_URL \
                           -Dsonar.userHome=${WORKSPACE}/.sonar
                     """
                 }
