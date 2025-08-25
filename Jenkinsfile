@@ -3,7 +3,7 @@ pipeline {
         docker {
             image 'sonarsource/sonar-scanner-cli:latest'
             label 'master-docker'   // Runs only on Jenkins master
-            args '-v /var/run/docker.sock:/var/run/docker.sock'
+            // args '-v /var/run/docker.sock:/var/run/docker.sock'
             args "-v \${WORKSPACE}/.sonar:/opt/sonar-scanner/.sonar"
         }
     }
