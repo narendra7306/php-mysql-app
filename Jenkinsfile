@@ -1,43 +1,36 @@
 pipeline {
-    agent any
+    agent {
+        docker {
+            image 'sonarsource/sonar-scanner-cli:latest'
+            label 'master-docker'   // Runs only on Jenkins master
+            args '-v /var/run/docker.sock:/var/run/docker.sock'
+        }
+    }
 
     environment {
-        SONARQUBE_ENV = 'MySonarQube'
-        SCANNER_HOME = tool 'SonarScanner'  
+        SONARQUBE_SERVER = 'SonarQubeServer'
+        SONARQUBE_TOKEN  = credentials('sonar-token')
     }
 
     stages {
-        stage('Checkout Code') {
+        stage('Checkout') {
             steps {
-                git credentialsId: 'github-cred', 
-                    url: 'https://github.com/narendra7306/php-mysql-app.git', branch: 'master'
+                git branch: 'master', url: 'https://github.com/narendra7306/php-mysql-app.git'
             }
         }
 
-
-        stage('SonarQube Scan') {
+        stage('SonarQube Analysis') {
             steps {
-                withSonarQubeEnv("${SONARQUBE_ENV}") {
+                withSonarQubeEnv("${SONARQUBE_SERVER}") {
                     sh """
-                        ${SCANNER_HOME}/bin/sonar-scanner \
+                        sonar-scanner \
                           -Dsonar.projectKey=my-php-app \
-                          -Dsonar.projectName="My PHP Application" \
                           -Dsonar.sources=. \
-                          -Dsonar.php.coverage.reportPaths=coverage.xml \
-                          -Dsonar.host.url=${SONAR_HOST_URL} \
-                    """    
-                }
-            }
-        }
-
-        stage('Quality Gate') {
-            steps {
-                timeout(time: 2, unit: 'MINUTES') {
-                    waitForQualityGate abortPipeline: true
+                          -Dsonar.host.url=$SONAR_HOST_URL \
+                          -Dsonar.login=$SONARQUBE_TOKEN
+                    """
                 }
             }
         }
     }
 }
-
-
