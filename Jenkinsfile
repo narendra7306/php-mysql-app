@@ -26,14 +26,23 @@ pipeline {
                     echo "Creating tar.gz of PHP application..."
                     sh '''
                         TAR_NAME="php-mysql-app-${BUILD_NUMBER}.tar.gz"
-                        tar -czvf ${TAR_NAME} --exclude='.git' --exclude='vendor' .
+                        # Copy to a temp directory to avoid changes during tar
+                        TMP_DIR=$(mktemp -d)
+                        rsync -a --exclude='.git' --exclude='vendor' --exclude='*.log' --exclude='*.tmp' ./ $TMP_DIR/
+                
+                        # Create tar.gz from the temp directory
+                        tar --warning=no-file-changed -czvf ${TAR_NAME} -C $TMP_DIR .
                         echo "Created TAR file: ${TAR_NAME}"
+                
+                        # Clean up temp directory
+                        rm -rf $TMP_DIR
                     '''
                 }
             }
         }
+   
 
-
+        
         stage('SonarQube Analysis') {
             steps {
                 withSonarQubeEnv("${SONARQUBE_SERVER}") {
