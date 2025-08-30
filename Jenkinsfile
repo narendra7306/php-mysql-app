@@ -25,23 +25,18 @@ pipeline {
                 script {
                     echo "Creating tar.gz of PHP application..."
                     sh '''
-                        apt-get update && apt-get install -y rsync
                         TAR_NAME="php-mysql-app-${BUILD_NUMBER}.tar.gz"
-                        # Copy to a temp directory to avoid changes during tar
-                        TMP_DIR=$(mktemp -d)
-                        rsync -a --exclude='.git' --exclude='vendor' --exclude='*.log' --exclude='*.tmp' ./ $TMP_DIR/
-                
-                        # Create tar.gz from the temp directory
-                        tar --warning=no-file-changed -czvf ${TAR_NAME} -C $TMP_DIR .
+                        tar --warning=no-file-changed -czvf ${TAR_NAME} \
+                            --exclude='.git' \
+                            --exclude='vendor' \
+                            --exclude='*.log' \
+                            --exclude='*.tmp' \
+                            .
                         echo "Created TAR file: ${TAR_NAME}"
-                
-                        # Clean up temp directory
-                        rm -rf $TMP_DIR
                     '''
                 }
             }
         }
-   
 
         
         stage('SonarQube Analysis') {
