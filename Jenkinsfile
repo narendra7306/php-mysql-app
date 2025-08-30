@@ -10,6 +10,8 @@ pipeline {
     environment {
         SONARQUBE_SERVER = 'SonarQubeServer'
         SONARQUBE_TOKEN  = credentials('sonar-token')
+        PHP_HOME = "/usr/bin/php" 
+        COMPOSER_HOME = "/usr/local/bin/composer"
     }
 
     stages {
@@ -18,6 +20,41 @@ pipeline {
                 git branch: 'master', url: 'https://github.com/narendra7306/php-mysql-app.git'
             }
         }
+
+
+        
+        stage('Build PHP Application') {
+            steps {
+                script {
+                    echo "Installing dependencies using Composer..."
+                    sh '''
+                        if [ -f composer.json ]; then
+                            composer install --no-interaction --no-progress --prefer-dist
+                        else
+                            echo "No composer.json found, skipping dependency installation."
+                        fi
+                    '''
+
+                    echo "Running PHP lint..."
+                    sh '''
+                        find . -name "*.php" -exec php -l {} \\; | grep "Errors" || true
+                    '''
+
+                    echo "Running PHPUnit tests..."
+                    sh '''
+                        if [ -f phpunit.xml ] || [ -f phpunit.xml.dist ]; then
+                            ./vendor/bin/phpunit --colors=always
+                        else
+                            echo "No PHPUnit config found, skipping tests."
+                        fi
+                    '''
+                }
+            }
+        }
+    
+
+
+
 
         stage('SonarQube Analysis') {
             steps {
