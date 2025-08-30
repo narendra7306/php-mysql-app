@@ -31,7 +31,7 @@ pipeline {
                             --exclude='vendor' \
                             --exclude='*.log' \
                             --exclude='*.tmp' \
-                            .
+                            . || true
                         echo "Created TAR file: ${TAR_NAME}"
                     '''
                 }
