@@ -25,6 +25,7 @@ pipeline {
                 script {
                     echo "Creating tar.gz of PHP application..."
                     sh '''
+                        apt-get update && apt-get install -y rsync
                         TAR_NAME="php-mysql-app-${BUILD_NUMBER}.tar.gz"
                         # Copy to a temp directory to avoid changes during tar
                         TMP_DIR=$(mktemp -d)
