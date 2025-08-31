@@ -42,7 +42,7 @@ pipeline {
             steps {
                 script {
                     def imageName = "my-php-app:${DOCKER_TAG}"
-                    sh "docker build -t ${imageName} -f Dockerfile.app ."
+                    sh '/usr/bin/docker build -t ${imageName} -f Dockerfile.app .'
                 }
             }
         }
