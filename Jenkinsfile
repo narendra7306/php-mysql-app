@@ -38,10 +38,15 @@ pipeline {
 
 
         stage('Build Docker Image') {
+            agent {
+                docker {
+                    image 'docker:24.0'   // contains Docker CLI
+                    args '-v /var/run/docker.sock:/var/run/docker.sock'
+                }
+            }
             steps {
                 script {
-                    def imageName = "${DOCKER_TAG}"  // or any name you want
-            
+                    def imageName = "my-php-app:${DOCKER_TAG}"
                     sh """
                         echo "Building Docker image: ${imageName}"
                         docker build -t ${imageName} -f Dockerfile .
@@ -49,6 +54,7 @@ pipeline {
                 }
             }
         }
+
 
 
        
