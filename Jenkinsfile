@@ -25,7 +25,7 @@ pipeline {
             steps {
                 withSonarQubeEnv("${SONARQUBE_SERVER}") {
                     sh """
-                        tar -xvf devops-demo-1.1.tar.gz
+                        #tar -xvf devops-demo-1.1.tar.gz
                         sonar-scanner \
                           -Dsonar.projectKey=my-php-app \
                           -Dsonar.sources=. \
