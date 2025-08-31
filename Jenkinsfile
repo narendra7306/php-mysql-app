@@ -37,15 +37,12 @@ pipeline {
         }
 
 
-        stage('Build Docker Image') {
+        stage('Test Shell') {
             agent { label 'master-docker' }
             steps {
-                script {
-                    def imageName = "my-php-app:${DOCKER_TAG}"
-                    sh '/usr/bin/docker build -t ${imageName} -f Dockerfile.app .'
-                }
+                sh 'echo "Hello from Jenkins node"'
             }
         }
-       
+
     }
 }
