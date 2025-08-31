@@ -1,0 +1,17 @@
+{
+    "name": "seelam/devops-demo-1.1",
+    "autoload": {
+        "psr-4": {
+            "Seelam\\DevopsDemo11\\": "src/"
+        }
+    },
+    "authors": [
+        {
+            "name": "narendra7306",
+            "email": "narendrareddy0a3@gmail.com"
+        }
+    ],
+    "require-dev": {
+        "phpunit/phpunit": "^9.6"
+    }
+}

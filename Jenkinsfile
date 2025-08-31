@@ -29,7 +29,9 @@ pipeline {
                           -Dsonar.projectKey=my-php-app \
                           -Dsonar.sources=. \
                           -Dsonar.host.url=$SONAR_HOST_URL \
-                          -Dsonar.userHome=${WORKSPACE}/.sonar
+                          -Dsonar.userHome=${WORKSPACE}/.sonar \
+                          -Dsonar.tests=tests
+                          -Dsonar.php.coverage.reportPaths=coverage.xml
                     """
                 }
             }
