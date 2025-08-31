@@ -10,9 +10,8 @@ $dbVersion = false;
 $conn = @new mysqli($config['hostname'], $config['username'], $config['password'], $config['dbname']);
 
 if ($conn->connect_errno) {
-	die("Database connection failed: " . $conn->connect_error);
-}
-else {
+    die("Database connection failed: " . $conn->connect_error);
+} else {
     $dbSuccess = true;
 }
 $sql = "SELECT version FROM dbversion ORDER BY id DESC LIMIT 1";
