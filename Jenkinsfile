@@ -38,12 +38,7 @@ pipeline {
 
 
         stage('Build Docker Image') {
-            agent {
-                docker {
-                    image 'docker:24.0-dind' 
-                    args '-v /var/run/docker.sock:/var/run/docker.sock'
-                }
-            }
+            agent { label 'master-docker' }
             steps {
                 script {
                     def imageName = "my-php-app:${DOCKER_TAG}"
