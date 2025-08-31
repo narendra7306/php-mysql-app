@@ -9,7 +9,8 @@ pipeline {
 
     environment {
         SONARQUBE_SERVER = 'SonarQubeServer'
-        SONARQUBE_TOKEN  = credentials('sonar-token')
+        SONARQUBE_TOKEN  = credentials('sonar-token')                                      
+        DOCKER_TAG      = "${BUILD_NUMBER}" 
     }
 
     stages {
@@ -17,26 +18,7 @@ pipeline {
             steps {
                 git branch: 'master', url: 'https://github.com/narendra7306/php-mysql-app.git'
             }
-        }
-    
-
-        stage('Build TAR File') {
-            steps {
-                script {
-                    echo "Creating tar.gz of PHP application..."
-                    sh '''
-                        TAR_NAME="php-mysql-app-${BUILD_NUMBER}.tar.gz"
-                        tar --warning=no-file-changed -czvf ${TAR_NAME} \
-                            --exclude='.git' \
-                            --exclude='vendor' \
-                            --exclude='*.log' \
-                            --exclude='*.tmp' \
-                            . || true
-                        echo "Created TAR file: ${TAR_NAME}"
-                    '''
-                }
-            }
-        }
+        }    
 
         
         stage('SonarQube Analysis') {
@@ -53,5 +35,22 @@ pipeline {
                 }
             }
         }
+
+
+        stage('Build Docker Image') {
+            steps {
+                script {
+                    def imageName = "${DOCKER_TAG}"  // or any name you want
+            
+                    sh """
+                        echo "Building Docker image: ${imageName}"
+                        docker build -t ${imageName} -f Dockerfile .
+                    """
+                }
+            }
+        }
+
+
+       
     }
 }
