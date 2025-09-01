@@ -17,23 +17,12 @@ pipeline {
         stage('Run Unit Tests') {
             agent {
                 docker {
-                    image 'php:8.2-cli'   // PHP container with CLI
+                    image 'composer:2'   // PHP container with CLI
                     args '-v /var/run/docker.sock:/var/run/docker.sock'
                 }
             }
             steps {
                 sh """
-                    apt-get update && apt-get install -y wget git unzip
-                    EXPECTED_SIGNATURE=\$(wget -q -O - https://composer.github.io/installer.sig) 
-                    php -r "copy('https://getcomposer.org/installer', 'composer-setup.php');"
-                    ACTUAL_SIGNATURE=\$(php -r "echo hash_file('sha384', 'composer-setup.php');")
-                    if [ "\$EXPECTED_SIGNATURE" != "\$ACTUAL_SIGNATURE" ]; then
-                        >&2 echo 'ERROR: Invalid composer installer signature'
-                        exit 1
-                    fi
-                    php composer-setup.php --install-dir=/usr/local/bin --filename=composer
-                    rm composer-setup.php
-
                     composer install --no-interaction --prefer-dist
 
                     ./vendor/bin/phpunit \
