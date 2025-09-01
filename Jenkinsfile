@@ -27,7 +27,8 @@ pipeline {
 
                     ./vendor/bin/phpunit \
                         --coverage-clover=coverage.xml \
-                        --log-junit junit-report.xml
+                        --log-junit junit-report.xml \
+                        tests
                 """
 
             }
