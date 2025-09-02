@@ -23,17 +23,11 @@ pipeline {
             }
             steps {
                 sh """
-                    # Install dependencies for Composer
-                    apt-get update && apt-get install -y git unzip
-
-                    # Install Composer
                     php -r "copy('https://getcomposer.org/installer', 'composer-setup.php');"
-                    php composer-setup.php --install-dir=/usr/local/bin --filename=composer
+                    php composer-setup.php --install-dir=$WORKSPACE --filename=composer
                     rm composer-setup.php
 
-                    # Verify Composer installation
-                    composer --version
-                    composer install --no-interaction --prefer-dist
+                    $WORKSPACE/composer install --no-interaction --prefer-dist
 
                     ./vendor/bin/phpunit \
                         --coverage-clover=coverage.xml \
