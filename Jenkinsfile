@@ -18,7 +18,7 @@ pipeline {
             agent {
                 docker {
                     image 'php:8.2-cli'   // PHP container with CLI
-                    args '-v /var/run/docker.sock:/var/run/docker.sock'
+                    args '-u root'
                 }
             }
             steps {
