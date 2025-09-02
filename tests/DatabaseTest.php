@@ -1,7 +1,7 @@
 <?php
 use PHPUnit\Framework\TestCase;
 
-class GeneralTest extends TestCase
+class DatabaseTest extends TestCase
 {
     private $config;
 
