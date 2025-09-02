@@ -23,6 +23,16 @@ pipeline {
             }
             steps {
                 sh """
+                    # Install dependencies for Composer
+                    apt-get update && apt-get install -y git unzip
+
+                    # Install Composer
+                    php -r "copy('https://getcomposer.org/installer', 'composer-setup.php');"
+                    php composer-setup.php --install-dir=/usr/local/bin --filename=composer
+                    rm composer-setup.php
+
+                    # Verify Composer installation
+                    composer --version
                     composer install --no-interaction --prefer-dist
 
                     ./vendor/bin/phpunit \
