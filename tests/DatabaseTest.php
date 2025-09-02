@@ -7,6 +7,7 @@ class DatabaseTest extends TestCase
 
     protected function setUp(): void
     {
+        // Load the config.ini
         $this->config = parse_ini_file(__DIR__ . '/../config.ini');
     }
 
@@ -15,14 +16,14 @@ class DatabaseTest extends TestCase
      */
     public function testConfigHasEnvironment()
     {
-        $this->assertArrayHasKey('environment', $this->config);
-        $this->assertNotEmpty($this->config['environment']);
+        $this->assertArrayHasKey('ENVNAME', $this->config, "ENVNAME key missing in config.ini");
+        $this->assertNotEmpty($this->config['ENVNAME'], "ENVNAME value is empty in config.ini");
     }
 
     public function testEnvironmentIsValid()
     {
         $allowed = ['dev', 'test', 'prod'];
-        $this->assertContains($this->config['environment'], $allowed, "Invalid environment set in config.ini");
+        $this->assertContains($this->config['ENVNAME'], $allowed, "Invalid environment set in config.ini");
     }
 
     /**
