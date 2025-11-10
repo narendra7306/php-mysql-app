@@ -1,42 +1,44 @@
 pipeline {
-    agent none   // no global agent, stages define their own
+    agent none
+
     environment {
         SONARQUBE_SERVER = 'SonarQubeServer'
-        SONARQUBE_TOKEN  = credentials('sonar-token')                                      
-        DOCKER_TAG       = "${BUILD_NUMBER}" 
+        SONARQUBE_TOKEN  = credentials('sonar-token')
+        DOCKER_TAG       = "${BUILD_NUMBER}"
     }
 
     stages {
         stage('Checkout') {
             agent { label 'master-docker' }
             steps {
-                git branch: 'master', url: 'https://github.com/narendra7306/php-mysql-app.git'
+                cleanWs()
+                git branch: 'master', url: 'https://github.com/narendra7306/php-mysql-app.git', shallow: true
             }
-        }    
+        }
 
         stage('Run Unit Tests') {
             agent {
                 docker {
-                    image 'php:8.2-cli'   // PHP container with CLI
+                    image 'php:8.2-cli'
                     args '-u root'
                 }
             }
             steps {
-                sh """
+                sh '''
                     apt-get update && apt-get install -y git unzip zip
                     git config --global --add safe.directory $WORKSPACE
+
                     php -r "copy('https://getcomposer.org/installer', 'composer-setup.php');"
-                    php composer-setup.php --install-dir=$WORKSPACE --filename=composer
+                    php composer-setup.php --install-dir=$HOME --filename=composer
                     rm composer-setup.php
 
-                    $WORKSPACE/composer install --no-interaction --prefer-dist
+                    $HOME/composer install --no-interaction --prefer-dist
 
                     ./vendor/bin/phpunit \
                         --coverage-clover=coverage.xml \
                         --log-junit junit-report.xml \
                         tests
-                """
-
+                '''
             }
         }
 
@@ -49,16 +51,16 @@ pipeline {
             }
             steps {
                 withSonarQubeEnv("${SONARQUBE_SERVER}") {
-                    sh """
+                    sh '''
                         sonar-scanner \
                           -Dsonar.projectKey=my-php-app \
-                          -Dsonar.sources=devops-demo-1.1 \
+                          -Dsonar.sources=. \
                           -Dsonar.host.url=$SONAR_HOST_URL \
                           -Dsonar.userHome=${WORKSPACE}/.sonar \
                           -Dsonar.tests=tests \
                           -Dsonar.php.coverage.reportPaths=coverage.xml \
                           -Dsonar.php.tests.reportPath=junit-report.xml
-                    """
+                    '''
                 }
             }
         }
@@ -72,10 +74,16 @@ pipeline {
             }
             steps {
                 script {
-                    def imageName = "my-php-app:${DOCKER_TAG}"
+                    def imageName = "narendra7306/php-app:${DOCKER_TAG}"
                     sh "docker build -t ${imageName} -f Dockerfile.app ."
                 }
             }
+        }
+    }
+
+    post {
+        always {
+            cleanWs()
         }
     }
 }
