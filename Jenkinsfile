@@ -7,14 +7,20 @@ pipeline {
         DOCKER_TAG       = "${BUILD_NUMBER}"
     }
 
-    stages {
-        stage('Checkout') {
-            agent { label 'master-docker' }
-            steps {
-                cleanWs()
-                git branch: 'master', url: 'https://github.com/narendra7306/php-mysql-app.git', shallow: true
-            }
-        }
+    stage('Checkout') {
+        agent { label 'master-docker' }
+        steps {
+        cleanWs()
+        checkout([
+            $class: 'GitSCM',
+            branches: [[name: '*/master']],
+            doGenerateSubmoduleConfigurations: false,
+            extensions: [[$class: 'CloneOption', depth: 1, noTags: true, shallow: true]],
+            userRemoteConfigs: [[url: 'https://github.com/narendra7306/php-mysql-app.git']]
+        ])
+       }
+    }
+
 
         stage('Run Unit Tests') {
             agent {
