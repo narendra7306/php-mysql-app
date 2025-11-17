@@ -23,7 +23,7 @@ pipeline {
 
         stage('Run Unit Tests') {
             agent {
-                docker {
+                none {
                     image 'php:8.2-cli'
                     args '-u root'
                 }
@@ -49,7 +49,7 @@ pipeline {
 
         stage('SonarQube Analysis') {
             agent {
-                docker {
+                none {
                     image 'sonarsource/sonar-scanner-cli:latest'
                     args '-v /var/run/docker.sock:/var/run/docker.sock'
                 }
@@ -72,7 +72,7 @@ pipeline {
 
         stage('Build Docker Image') {
             agent {
-                docker {
+                none {
                     image 'docker:24.0-dind'
                     args '-v /var/run/docker.sock:/var/run/docker.sock'
                 }
