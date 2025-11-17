@@ -8,6 +8,7 @@ pipeline {
     }
 
     stages {
+
         stage('Checkout') {
             steps {
                 cleanWs()
@@ -23,7 +24,7 @@ pipeline {
 
         stage('Run Unit Tests') {
             agent {
-                none {
+                docker {
                     image 'php:8.2-cli'
                     args '-u root'
                 }
@@ -31,13 +32,12 @@ pipeline {
             steps {
                 sh '''
                     apt-get update && apt-get install -y git unzip zip
-                    git config --global --add safe.directory $WORKSPACE
 
                     php -r "copy('https://getcomposer.org/installer', 'composer-setup.php');"
-                    php composer-setup.php --install-dir=$HOME --filename=composer
+                    php composer-setup.php --install-dir=/usr/local/bin --filename=composer
                     rm composer-setup.php
 
-                    $HOME/composer install --no-interaction --prefer-dist
+                    composer install --no-interaction --prefer-dist
 
                     ./vendor/bin/phpunit \
                         --coverage-clover=coverage.xml \
@@ -49,7 +49,7 @@ pipeline {
 
         stage('SonarQube Analysis') {
             agent {
-                none {
+                docker {
                     image 'sonarsource/sonar-scanner-cli:latest'
                     args '-v /var/run/docker.sock:/var/run/docker.sock'
                 }
@@ -72,7 +72,7 @@ pipeline {
 
         stage('Build Docker Image') {
             agent {
-                none {
+                docker {
                     image 'docker:24.0-dind'
                     args '-v /var/run/docker.sock:/var/run/docker.sock'
                 }
