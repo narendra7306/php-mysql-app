@@ -1,5 +1,5 @@
 pipeline {
-    agent none
+    agent any
 
     environment {
         SONARQUBE_SERVER = 'SonarQubeServer'
@@ -9,7 +9,6 @@ pipeline {
 
     stages {
         stage('Checkout') {
-            agent { label 'master-docker' }
             steps {
                 cleanWs()
                 checkout([
