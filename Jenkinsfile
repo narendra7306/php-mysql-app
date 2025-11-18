@@ -5,6 +5,7 @@ pipeline {
         SONARQUBE_SERVER = 'SonarQubeServer'
         SONARQUBE_TOKEN  = credentials('sonar-token')
         DOCKER_TAG       = "${BUILD_NUMBER}"
+        DOCKER_HOST      = "unix:///var/run/docker.sock"
     }
 
     stages {
@@ -12,13 +13,7 @@ pipeline {
         stage('Checkout') {
             steps {
                 cleanWs()
-                checkout([
-                    $class: 'GitSCM',
-                    branches: [[name: '*/master']],
-                    doGenerateSubmoduleConfigurations: false,
-                    extensions: [[$class: 'CloneOption', depth: 1, noTags: true, shallow: true]],
-                    userRemoteConfigs: [[url: 'https://github.com/narendra7306/php-mysql-app.git']]
-                ])
+                checkout scm
             }
         }
 
@@ -26,7 +21,7 @@ pipeline {
             agent {
                 docker {
                     image 'php:8.2-cli'
-                    args '-u root'
+                    args '-u root -v /var/run/docker.sock:/var/run/docker.sock'
                 }
             }
             steps {
@@ -51,7 +46,7 @@ pipeline {
             agent {
                 docker {
                     image 'sonarsource/sonar-scanner-cli:latest'
-                    args '-v /var/run/docker.sock:/var/run/docker.sock'
+                    args '-u root'
                 }
             }
             steps {
@@ -73,8 +68,8 @@ pipeline {
         stage('Build Docker Image') {
             agent {
                 docker {
-                    image 'docker:24.0-dind'
-                    args '-v /var/run/docker.sock:/var/run/docker.sock'
+                    image 'docker:latest'
+                    args '-u root -v /var/run/docker.sock:/var/run/docker.sock'
                 }
             }
             steps {
