@@ -21,7 +21,7 @@ pipeline {
             agent {
                 docker {
                     image 'php:8.2-cli'
-                    args '-u root'
+                    args '-u root --workdir /app -v "$WORKSPACE:/app"'
                 }
             }
             steps {
