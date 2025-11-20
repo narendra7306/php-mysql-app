@@ -1,6 +1,6 @@
 # DevOps-Demo
 
-This application is used to demonstrate and test various DevOps, CI, and CD concepts.
+This application is used to demonstrate and test various DevOps, CI, and CD concepts. this is my dev project
 
 ![DevOps Demo Screenshot](https://raw.githubusercontent.com/devopslibrary/devops-demo/master/screenshots/overview.png "Overview")
 
