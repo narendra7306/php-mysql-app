@@ -5,7 +5,7 @@ pipeline {
         SONARQUBE_SERVER = 'SonarQubeServer'
         SONARQUBE_TOKEN  = credentials('sonar-token')
         DOCKER_TAG       = "${BUILD_NUMBER}"
-        DOCKER_HOST      = "unix:///var/run/docker.sock"
+        DOCKER_HOST      = "tcp://localhost:2375"
     }
 
     stages {
@@ -21,7 +21,7 @@ pipeline {
             agent {
                 docker {
                     image 'php:8.2-cli'
-                    args '-u root -v /var/run/docker.sock:/var/run/docker.sock'
+                    args '-u root'
                 }
             }
             steps {
@@ -69,7 +69,7 @@ pipeline {
             agent {
                 docker {
                     image 'docker:latest'
-                    args '-u root -v /var/run/docker.sock:/var/run/docker.sock'
+                    args '-u root'
                 }
             }
             steps {
