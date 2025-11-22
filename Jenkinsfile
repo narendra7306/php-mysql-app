@@ -5,7 +5,7 @@ pipeline {
         SONARQUBE_SERVER = 'SonarQubeServer'
         SONARQUBE_TOKEN  = credentials('sonar-token')
         DOCKER_TAG       = "${BUILD_NUMBER}"
-        DOCKER_HOST      = "tcp://localhost:2375"
+        DOCKER_HOST      = "unix:///var/run/docker.sock"
     }
 
     stages {
