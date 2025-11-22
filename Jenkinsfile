@@ -6,6 +6,7 @@ pipeline {
         SONARQUBE_TOKEN  = credentials('sonar-token')
         DOCKER_TAG       = "${BUILD_NUMBER}"
         DOCKER_HOST      = "unix:///var/run/docker.sock"
+        DOCKER_IMAGE     = "narendra7306/php-app"
     }
 
     stages {
@@ -72,8 +73,28 @@ pipeline {
             }
             steps {
                 script {
-                    def imageName = "narendra7306/php-app:${DOCKER_TAG}"
-                    sh "docker build -t ${imageName} -f Dockerfile.app ."
+                    sh "docker build -t ${DOCKER_IMAGE}:${DOCKER_TAG} -f Dockerfile.app ."
+                }
+            }
+        }
+
+        stage('Publish Docker Image') {
+            agent {
+                docker {
+                    image 'docker:latest'
+                    args '--entrypoint="" -u root -v /var/run/docker.sock:/var/run/docker.sock'
+                }
+            }
+            steps {
+                withCredentials([usernamePassword(credentialsId: 'dockerhub-credentials', passwordVariable: 'DOCKERHUB_PASS', usernameVariable: 'DOCKERHUB_USER')]) {
+                    script {
+                        sh """
+                            echo "$DOCKERHUB_PASS" | docker login -u "$DOCKERHUB_USER" --password-stdin
+                            docker push ${DOCKER_IMAGE}:${DOCKER_TAG}
+                            docker tag ${DOCKER_IMAGE}:${DOCKER_TAG} ${DOCKER_IMAGE}:latest
+                            docker push ${DOCKER_IMAGE}:latest
+                        """
+                    }
                 }
             }
         }
