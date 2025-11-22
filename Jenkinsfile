@@ -27,13 +27,10 @@ pipeline {
             steps {
                 sh '''
                     apt-get update && apt-get install -y git unzip zip
-
                     php -r "copy('https://getcomposer.org/installer', 'composer-setup.php');"
                     php composer-setup.php --install-dir=/usr/local/bin --filename=composer
                     rm composer-setup.php
-
                     composer install --no-interaction --prefer-dist
-
                     ./vendor/bin/phpunit \
                         --coverage-clover=coverage.xml \
                         --log-junit junit-report.xml \
@@ -70,7 +67,7 @@ pipeline {
             agent {
                 docker {
                     image 'docker:latest'
-                    args '-u root'
+                    args '--entrypoint="" -u root -v /var/run/docker.sock:/var/run/docker.sock'
                 }
             }
             steps {
