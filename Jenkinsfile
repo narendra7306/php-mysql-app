@@ -59,6 +59,7 @@ pipeline {
                           -Dsonar.host.url=http://172.28.47.176:9000 \
                           -Dsonar.tests=tests \
                           -Dsonar.php.coverage.reportPaths=coverage.xml \
+                          -Dsonar.exclusions=tests/** \
                           -Dsonar.php.tests.reportPath=junit-report.xml
                     '''
                 }
