@@ -6,7 +6,10 @@ pipeline {
         SONARQUBE_TOKEN  = credentials('sonar-token')
         DOCKER_TAG       = "${BUILD_NUMBER}"
         DOCKER_HOST      = "unix:///var/run/docker.sock"
-        DOCKER_IMAGE     = "narendra7306/php-app"
+
+        // Docker Repositories
+        PHP_IMAGE        = "narendra7306/php-app"
+        MYSQL_IMAGE      = "narendra7306/mysql-backend"
     }
 
     stages {
@@ -64,7 +67,7 @@ pipeline {
             }
         }
 
-        stage('Build Docker Image') {
+        stage('Build PHP Docker Image') {
             agent {
                 docker {
                     image 'docker:latest'
@@ -73,12 +76,26 @@ pipeline {
             }
             steps {
                 script {
-                    sh "docker build -t ${DOCKER_IMAGE}:${DOCKER_TAG} -f Dockerfile.app ."
+                    sh "docker build -t ${PHP_IMAGE}:${DOCKER_TAG} -f Dockerfile.app ."
                 }
             }
         }
 
-        stage('Publish Docker Image') {
+        stage('Build MySQL Docker Image') {
+            agent {
+                docker {
+                    image 'docker:latest'
+                    args '--entrypoint=\"\" -u root -v /var/run/docker.sock:/var/run/docker.sock'
+                }
+            }
+            steps {
+                script {
+                    sh "docker build -t ${MYSQL_IMAGE}:${DOCKER_TAG} -f Dockerfile.mysql ."
+                }
+            }
+        }
+
+        stage('Publish Docker Images') {
             agent {
                 docker {
                     image 'docker:latest'
@@ -86,13 +103,20 @@ pipeline {
                 }
             }
             steps {
-                withCredentials([usernamePassword(credentialsId: 'dockerhub-credentials', passwordVariable: 'DOCKERHUB_PASS', usernameVariable: 'DOCKERHUB_USER')]) {
+                withCredentials([usernamePassword(credentialsId: 'dockerhub-credentials', usernameVariable: 'DOCKERHUB_USER', passwordVariable: 'DOCKERHUB_PASS')]) {
                     script {
                         sh """
                             echo "$DOCKERHUB_PASS" | docker login -u "$DOCKERHUB_USER" --password-stdin
-                            docker push ${DOCKER_IMAGE}:${DOCKER_TAG}
-                            docker tag ${DOCKER_IMAGE}:${DOCKER_TAG} ${DOCKER_IMAGE}:latest
-                            docker push ${DOCKER_IMAGE}:latest
+
+                            # Push PHP image
+                            docker push ${PHP_IMAGE}:${DOCKER_TAG}
+                            docker tag ${PHP_IMAGE}:${DOCKER_TAG} ${PHP_IMAGE}:latest
+                            docker push ${PHP_IMAGE}:latest
+
+                            # Push MySQL image
+                            docker push ${MYSQL_IMAGE}:${DOCKER_TAG}
+                            docker tag ${MYSQL_IMAGE}:${DOCKER_TAG} ${MYSQL_IMAGE}:latest
+                            docker push ${MYSQL_IMAGE}:latest
                         """
                     }
                 }
@@ -103,6 +127,14 @@ pipeline {
     post {
         always {
             cleanWs()
+        }
+        success {
+            echo "🎉 Successfully built and pushed images:"
+            echo "📦 ${PHP_IMAGE}:${DOCKER_TAG} and latest"
+            echo "📦 ${MYSQL_IMAGE}:${DOCKER_TAG} and latest"
+        }
+        failure {
+            echo "❌ Build failed. Docker images were not pushed."
         }
     }
 }
