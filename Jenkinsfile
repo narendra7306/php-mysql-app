@@ -7,9 +7,11 @@ pipeline {
         DOCKER_TAG       = "${BUILD_NUMBER}"
         DOCKER_HOST      = "unix:///var/run/docker.sock"
 
-        // Docker Repositories
-        PHP_IMAGE        = "narendra7306/php-app"
-        MYSQL_IMAGE      = "narendra7306/mysql-backend"
+        DOCKER_NAMESPACE = "narendra7306"
+        PHP_IMAGE        = "${DOCKER_NAMESPACE}/php-app"
+        MYSQL_IMAGE      = "${DOCKER_NAMESPACE}/mysql-backend"
+
+        DOCKERHUB_CREDENTIALS = credentials('dockerhub-credentials')
     }
 
     stages {
@@ -35,10 +37,7 @@ pipeline {
                     php composer-setup.php --install-dir=/usr/local/bin --filename=composer
                     rm composer-setup.php
                     composer install --no-interaction --prefer-dist
-                    ./vendor/bin/phpunit \
-                        --coverage-clover=coverage.xml \
-                        --log-junit junit-report.xml \
-                        tests
+                    ./vendor/bin/phpunit --coverage-clover=coverage.xml --log-junit junit-report.xml tests
                 '''
             }
         }
@@ -67,7 +66,7 @@ pipeline {
             }
         }
 
-        stage('Build PHP Docker Image') {
+        stage('Build Docker Images') {
             agent {
                 docker {
                     image 'docker:latest'
@@ -75,27 +74,32 @@ pipeline {
                 }
             }
             steps {
-                script {
-                    sh "docker build -t ${PHP_IMAGE}:${DOCKER_TAG} -f Dockerfile.app ."
-                }
+                sh """
+                    docker build -t ${PHP_IMAGE}:${DOCKER_TAG} -f Dockerfile.app .
+                    docker build -t ${MYSQL_IMAGE}:${DOCKER_TAG} -f Dockerfile.mysql .
+                """
             }
         }
 
-        stage('Build MySQL Docker Image') {
+        stage('Security Scan - Trivy') {
             agent {
                 docker {
-                    image 'docker:latest'
-                    args '--entrypoint=\"\" -u root -v /var/run/docker.sock:/var/run/docker.sock'
+                    image 'aquasec/trivy:latest'
+                    args '--entrypoint="" -v /var/run/docker.sock:/var/run/docker.sock'
                 }
             }
             steps {
                 script {
-                    sh "docker build -t ${MYSQL_IMAGE}:${DOCKER_TAG} -f Dockerfile.mysql ."
+                    // Fail the build if high or critical vulnerabilities are found
+                    sh """
+                        trivy image --exit-code 1 --severity HIGH,CRITICAL ${PHP_IMAGE}:${DOCKER_TAG}
+                        trivy image --exit-code 1 --severity HIGH,CRITICAL ${MYSQL_IMAGE}:${DOCKER_TAG}
+                    """
                 }
             }
         }
 
-        stage('Publish Docker Images') {
+        stage('Push Docker Images') {
             agent {
                 docker {
                     image 'docker:latest'
@@ -103,22 +107,18 @@ pipeline {
                 }
             }
             steps {
-                withCredentials([usernamePassword(credentialsId: 'dockerhub-credentials', usernameVariable: 'DOCKERHUB_USER', passwordVariable: 'DOCKERHUB_PASS')]) {
-                    script {
-                        sh """
-                            echo "$DOCKERHUB_PASS" | docker login -u "$DOCKERHUB_USER" --password-stdin
+                withCredentials([usernamePassword(credentialsId: 'dockerhub-credentials', usernameVariable: 'USERNAME', passwordVariable: 'PASSWORD')]) {
+                    sh """
+                        echo "$PASSWORD" | docker login -u "$USERNAME" --password-stdin
 
-                            # Push PHP image
-                            docker push ${PHP_IMAGE}:${DOCKER_TAG}
-                            docker tag ${PHP_IMAGE}:${DOCKER_TAG} ${PHP_IMAGE}:latest
-                            docker push ${PHP_IMAGE}:latest
+                        docker push ${PHP_IMAGE}:${DOCKER_TAG}
+                        docker tag ${PHP_IMAGE}:${DOCKER_TAG} ${PHP_IMAGE}:latest
+                        docker push ${PHP_IMAGE}:latest
 
-                            # Push MySQL image
-                            docker push ${MYSQL_IMAGE}:${DOCKER_TAG}
-                            docker tag ${MYSQL_IMAGE}:${DOCKER_TAG} ${MYSQL_IMAGE}:latest
-                            docker push ${MYSQL_IMAGE}:latest
-                        """
-                    }
+                        docker push ${MYSQL_IMAGE}:${DOCKER_TAG}
+                        docker tag ${MYSQL_IMAGE}:${DOCKER_TAG} ${MYSQL_IMAGE}:latest
+                        docker push ${MYSQL_IMAGE}:latest
+                    """
                 }
             }
         }
@@ -127,14 +127,6 @@ pipeline {
     post {
         always {
             cleanWs()
-        }
-        success {
-            echo "🎉 Successfully built and pushed images:"
-            echo "📦 ${PHP_IMAGE}:${DOCKER_TAG} and latest"
-            echo "📦 ${MYSQL_IMAGE}:${DOCKER_TAG} and latest"
-        }
-        failure {
-            echo "❌ Build failed. Docker images were not pushed."
         }
     }
 }
