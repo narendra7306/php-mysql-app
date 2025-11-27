@@ -83,18 +83,13 @@ pipeline {
         }
 
         stage('Trivy Scan PHP Image') {
-            agent {
-                docker {
-                    image 'aquasec/trivy:latest'
-                    args '--entrypoint="" -u root -v /var/run/docker.sock:/var/run/docker.sock -v "${env.WORKSPACE}:${env.WORKSPACE}"'
-                }
-            }
             steps {
                 script {
                     sh """
-                        mkdir -p ${WORKSPACE}/.trivy-cache
-                        trivy image --exit-code 1 --severity HIGH,CRITICAL \
-                        --cache-dir ${WORKSPACE}/.trivy-cache \
+                        docker run --rm \
+                        -v /var/run/docker.sock:/var/run/docker.sock \
+                        aquasec/trivy:latest image \
+                        --exit-code 1 --severity HIGH,CRITICAL \
                         ${PHP_IMAGE}:${DOCKER_TAG}
                     """
                 }
@@ -102,23 +97,19 @@ pipeline {
         }
 
         stage('Trivy Scan MySQL Image') {
-            agent {
-                docker {
-                    image 'aquasec/trivy:latest'
-                    args '--entrypoint="" -u root -v /var/run/docker.sock:/var/run/docker.sock -v "${env.WORKSPACE}:${env.WORKSPACE}"'
-                }
-            }
             steps {
                 script {
                     sh """
-                        mkdir -p ${WORKSPACE}/.trivy-cache
-                        trivy image --exit-code 1 --severity HIGH,CRITICAL \
-                        --cache-dir ${WORKSPACE}/.trivy-cache \
+                        docker run --rm \
+                        -v /var/run/docker.sock:/var/run/docker.sock \
+                        aquasec/trivy:latest image \
+                        --exit-code 1 --severity HIGH,CRITICAL \
                         ${MYSQL_IMAGE}:${DOCKER_TAG}
                     """
                 }
             }
         }
+
 
         stage('Push Docker Images') {
             agent {
