@@ -2,126 +2,80 @@ pipeline {
     agent any
 
     environment {
-        SONARQUBE_SERVER = 'SonarQubeServer'
-        SONARQUBE_TOKEN  = credentials('sonar-token')
-        DOCKER_TAG       = "${BUILD_NUMBER}"
-        DOCKER_HOST      = "unix:///var/run/docker.sock"
-
-        DOCKER_NAMESPACE = "narendra7306"
-        PHP_IMAGE        = "${DOCKER_NAMESPACE}/php-app"
-        MYSQL_IMAGE      = "${DOCKER_NAMESPACE}/mysql-backend"
-
-        DOCKERHUB_CREDENTIALS = credentials('dockerhub-credentials')
+        DOCKER_TAG = "latest"
+        PHP_IMAGE = "narendra7306/php-app"
+        MYSQL_IMAGE = "narendra7306/mysql-backend"
     }
 
     stages {
 
         stage('Checkout') {
             steps {
-                cleanWs()
                 checkout scm
             }
         }
 
-        stage('Run Unit Tests') {
-            agent {
-                docker {
-                    image 'php:8.2-cli'
-                    args "-u root -v \"${env.WORKSPACE}:/app\" --workdir /app"
-                }
-            }
+        stage('Build Images') {
             steps {
-                sh '''
-                    apt-get update && apt-get install -y git unzip zip
-                    php -r "copy('https://getcomposer.org/installer', 'composer-setup.php');"
-                    php composer-setup.php --install-dir=/usr/local/bin --filename=composer
-                    rm composer-setup.php
-                    composer install --no-interaction --prefer-dist
-                    ./vendor/bin/phpunit --coverage-clover=coverage.xml --log-junit junit-report.xml tests
-                '''
-            }
-        }
-
-        stage('SonarQube Analysis') {
-            agent {
-                docker {
-                    image 'sonarsource/sonar-scanner-cli:latest'
-                    args '-u root'
-                }
-            }
-            steps {
-                withSonarQubeEnv("${SONARQUBE_SERVER}") {
-                    sh '''
-                        sonar-scanner \
-                          -Dsonar.projectKey=my-php-app \
-                          -Dsonar.sources=. \
-                          -Dsonar.userHome=${WORKSPACE}/.sonar \
-                          -Dsonar.host.url=http://172.28.47.176:9000 \
-                          -Dsonar.tests=tests \
-                          -Dsonar.php.coverage.reportPaths=coverage.xml \
-                          -Dsonar.exclusions=tests/** \
-                          -Dsonar.php.tests.reportPath=junit-report.xml
-                    '''
+                script {
+                    sh "docker build -t ${PHP_IMAGE}:${DOCKER_TAG} -f Dockerfile ."
+                    sh "docker build -t ${MYSQL_IMAGE}:${DOCKER_TAG} -f Dockerfile.mysql ."
                 }
             }
         }
 
-        stage('Build Docker Images') {
-            agent {
-                docker {
-                    image 'docker:latest'
-                    args '--entrypoint="" -u root -v /var/run/docker.sock:/var/run/docker.sock'
-                }
-            }
-            steps {
-                sh """
-                    docker build -t ${PHP_IMAGE}:${DOCKER_TAG} -f Dockerfile.app .
-                    docker build -t ${MYSQL_IMAGE}:${DOCKER_TAG} -f Dockerfile.mysql .
-                """
-            }
-        }
-
-        stage('Security Scan - Trivy') {
+        stage('Trivy Scan PHP Image') {
             agent {
                 docker {
                     image 'aquasec/trivy:latest'
-                    args '--entrypoint="" -v /var/run/docker.sock:/var/run/docker.sock'
+                    args '--entrypoint="" -u root -v /var/run/docker.sock:/var/run/docker.sock -v "${env.WORKSPACE}:${env.WORKSPACE}"'
                 }
             }
             steps {
                 script {
-                    // Fail the build if high or critical vulnerabilities are found
                     sh """
-                        trivy image --exit-code 1 --severity HIGH,CRITICAL ${PHP_IMAGE}:${DOCKER_TAG}
-                        trivy image --exit-code 1 --severity HIGH,CRITICAL ${MYSQL_IMAGE}:${DOCKER_TAG}
+                        mkdir -p ${WORKSPACE}/.trivy-cache
+                        trivy image --exit-code 1 --severity HIGH,CRITICAL \
+                        --cache-dir ${WORKSPACE}/.trivy-cache \
+                        ${PHP_IMAGE}:${DOCKER_TAG}
                     """
                 }
             }
         }
 
-        stage('Push Docker Images') {
+        stage('Trivy Scan MySQL Image') {
             agent {
                 docker {
-                    image 'docker:latest'
-                    args '--entrypoint="" -u root -v /var/run/docker.sock:/var/run/docker.sock'
+                    image 'aquasec/trivy:latest'
+                    args '--entrypoint="" -u root -v /var/run/docker.sock:/var/run/docker.sock -v "${env.WORKSPACE}:${env.WORKSPACE}"'
                 }
             }
             steps {
-                withCredentials([usernamePassword(credentialsId: 'dockerhub-credentials', usernameVariable: 'USERNAME', passwordVariable: 'PASSWORD')]) {
+                script {
                     sh """
-                        echo "$PASSWORD" | docker login -u "$USERNAME" --password-stdin
-
-                        docker push ${PHP_IMAGE}:${DOCKER_TAG}
-                        docker tag ${PHP_IMAGE}:${DOCKER_TAG} ${PHP_IMAGE}:latest
-                        docker push ${PHP_IMAGE}:latest
-
-                        docker push ${MYSQL_IMAGE}:${DOCKER_TAG}
-                        docker tag ${MYSQL_IMAGE}:${DOCKER_TAG} ${MYSQL_IMAGE}:latest
-                        docker push ${MYSQL_IMAGE}:latest
+                        mkdir -p ${WORKSPACE}/.trivy-cache
+                        trivy image --exit-code 1 --severity HIGH,CRITICAL \
+                        --cache-dir ${WORKSPACE}/.trivy-cache \
+                        ${MYSQL_IMAGE}:${DOCKER_TAG}
                     """
                 }
             }
         }
+
+        stage('Push to Docker Hub') {
+            steps {
+                script {
+                    withCredentials([usernamePassword(credentialsId: 'dockerhub-credentials', usernameVariable: 'USERNAME', passwordVariable: 'PASSWORD')]) {
+                        sh """
+                            echo "$PASSWORD" | docker login -u "$USERNAME" --password-stdin
+                            docker push ${PHP_IMAGE}:${DOCKER_TAG}
+                            docker push ${MYSQL_IMAGE}:${DOCKER_TAG}
+                        """
+                    }
+                }
+            }
+        }
+
     }
 
     post {
