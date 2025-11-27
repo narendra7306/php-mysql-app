@@ -12,6 +12,7 @@ pipeline {
         MYSQL_IMAGE      = "${DOCKER_NAMESPACE}/mysql-backend"
 
         DOCKERHUB_CREDENTIALS = credentials('dockerhub-credentials')
+        DOCKER_BUILDKIT = "1"
     }
 
     stages {
