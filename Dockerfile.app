@@ -23,6 +23,7 @@ RUN rm -rf /var/www/html/*
 
 # 3. Copy and extract application package
 COPY devops-demo-1.1.tar.gz /tmp/devops-demo-1.1.tar.gz
+
 RUN tar -xzf /tmp/devops-demo-1.1.tar.gz -C /var/www/html && \
     rm /tmp/devops-demo-1.1.tar.gz
 
@@ -40,4 +41,8 @@ RUN sed -i \
 
 # 6. Expose port and start Apache in the foreground
 EXPOSE 80
+
 CMD ["apachectl", "-D", "FOREGROUND"]
+
+RUN rm -f /etc/ssl/private/ssl-cert-snakeoil.key
+
