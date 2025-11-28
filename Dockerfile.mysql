@@ -4,6 +4,9 @@ FROM mysql:8.0
 
 ENV MYSQL_DATABASE=devopsdb
 
+RUN apt-get update && apt-get upgrade -y
+
+
 # Copy the SQL file into the container's init folder
 COPY backup.sql /docker-entrypoint-initdb.d/
 
