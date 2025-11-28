@@ -4,7 +4,7 @@ FROM mysql:8.0
 
 ENV MYSQL_DATABASE=devopsdb
 
-RUN apt-get update && apt-get upgrade -y
+RUN microdnf update -y && microdnf upgrade -y && microdnf clean all
 
 
 # Copy the SQL file into the container's init folder
