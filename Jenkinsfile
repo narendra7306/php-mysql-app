@@ -107,12 +107,20 @@ pipeline {
                 script {
                     echo "🔍 Scanning MySQL Image for vulnerabilities"
                     sh '''
-                    trivy image --severity CRITICAL --exit-code 1 --no-progress ${MYSQL_IMAGE} || true
-                    trivy image --severity HIGH --exit-code 0 --no-progress ${MYSQL_IMAGE}
+                        docker run --rm \
+                        -v /var/run/docker.sock:/var/run/docker.sock \
+                        -v ${WORKSPACE}/.trivy-cache:/root/.cache/ \
+                        aquasec/trivy image --severity CRITICAL --exit-code 1 --no-progress ${MYSQL_IMAGE}:${DOCKER_TAG} || true
+
+                        docker run --rm \
+                        -v /var/run/docker.sock:/var/run/docker.sock \
+                        -v ${WORKSPACE}/.trivy-cache:/root/.cache/ \
+                        aquasec/trivy image --severity HIGH --exit-code 0 --no-progress ${MYSQL_IMAGE}:${DOCKER_TAG}
                     '''
                 }
             }
         }
+
 
 
         stage('Push Docker Images') {
