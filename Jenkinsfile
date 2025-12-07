@@ -119,11 +119,6 @@ pipeline {
                     }
                 }
             }
-            post {
-                always {
-                    archiveArtifacts artifacts: 'trivy-reports/php-image-report.txt', fingerprint: true
-                }
-            }
         }
 
 
@@ -191,7 +186,7 @@ pipeline {
 
     post {
         always {
-            archiveArtifacts artifacts: 'trivy-reports/*.csv', fingerprint: true
+            archiveArtifacts artifacts: 'trivy-reports/*.txt', fingerprint: true
             cleanWs()
         }
     }
