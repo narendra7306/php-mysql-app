@@ -87,17 +87,17 @@ pipeline {
                 script {
                     sh '''
                         mkdir -p trivy-reports
-                        
+
                         echo "🔍 Running Trivy scan..."
                         docker run --rm \
                             -v /var/run/docker.sock:/var/run/docker.sock \
                             -v ${WORKSPACE}/.trivy-cache:/root/.cache \
-                            aquasec/trivy image --skip-version-check --severity HIGH,CRITICAL --format table php:8.1 > trivy-reports/php-image-report.txt
+                            aquasec/trivy image --skip-version-check --severity HIGH,CRITICAL --format csv php:8.1 > trivy-reports/php-image-report.csv
 
                         echo "✔ Trivy scan completed. Checking for HIGH/CRITICAL vulnerabilities..."
 
                         # Filter ONLY real vulnerability rows (Trivy tables always start with '|' character)
-                        VULNS=$(grep -E "HIGH|CRITICAL" trivy-reports/php-image-report.txt | grep "^|")
+                        VULNS=$(grep -E "HIGH|CRITICAL" trivy-reports/php-image-report.csv | grep "^|")
 
                         if [ ! -z "$VULNS" ]; then
                             echo "❌ HIGH or CRITICAL vulnerabilities detected in PHP image!"
@@ -127,17 +127,17 @@ pipeline {
                             -v /var/run/docker.sock:/var/run/docker.sock \
                             -v ${WORKSPACE}/.trivy-cache:/root/.cache \
                             aquasec/trivy image \
-                            --format table \
+                            --format csv \
                             --no-progress \
-                            ${MYSQL_IMAGE}:${DOCKER_TAG} > trivy-reports/mysql-image-report.txt
+                            ${MYSQL_IMAGE}:${DOCKER_TAG} > trivy-reports/mysql-image-report.csv
 
                         echo "✔ Trivy scan completed. Checking for HIGH/CRITICAL vulnerabilities..."
 
                         # Check for HIGH or CRITICAL in the report
-                        if grep -E "HIGH|CRITICAL" trivy-reports/mysql-image-report.txt > /dev/null; then
+                        if grep -E "HIGH|CRITICAL" trivy-reports/mysql-image-report.csv > /dev/null; then
                             echo "❌ HIGH or CRITICAL vulnerabilities detected in MySQL image!"
                             echo "----- Vulnerability Summary (MySQL Image) -----"
-                            grep -E "HIGH|CRITICAL" trivy-reports/mysql-image-report.txt
+                            grep -E "HIGH|CRITICAL" trivy-reports/mysql-image-report.csv
                             exit 1
                         fi
 
@@ -175,7 +175,7 @@ pipeline {
 
     post {
         always {
-            archiveArtifacts artifacts: 'trivy-reports/*.txt', fingerprint: true
+            archiveArtifacts artifacts: 'trivy-reports/*.csv', fingerprint: true
             cleanWs()
         }
     }
