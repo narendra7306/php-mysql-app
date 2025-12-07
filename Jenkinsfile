@@ -94,12 +94,13 @@ pipeline {
                     -v /var/run/docker.sock:/var/run/docker.sock \
                     -v \$WORKSPACE/.trivy-cache:/root/.cache \
                     -v \$WORKSPACE/trivy-ascii.tpl:/tmp/trivy-ascii.tpl \
+                    -v \$WORKSPACE/trivy-reports:/reports \
                     aquasec/trivy image \
                     --skip-version-check \
                     --severity HIGH,CRITICAL \
                     --format template \
                     --template @/tmp/trivy-ascii.tpl \
-                    --output trivy-reports/php-image-report.txt \
+                    --output /reports/php-image-report.txt \
                     php:8.1
                     """
 
@@ -112,13 +113,19 @@ pipeline {
 
                     if (hasHighCritical) {
                         echo "❌ High/Critical vulnerabilities detected!"
-                        echo "----- Vulnerability Summary -----"
+                        echo "----- Vulnerability Summary (PHP) -----"
                         echo hasHighCritical
                         error("Failing pipeline due to HIGH/CRITICAL vulnerabilities")
                     }
                 }
             }
+            post {
+                always {
+                    archiveArtifacts artifacts: 'trivy-reports/php-image-report.txt', fingerprint: true
+                }
+            }
         }
+
 
 
 
