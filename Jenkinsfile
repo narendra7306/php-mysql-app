@@ -86,6 +86,8 @@ pipeline {
             steps {
                 script {
                     sh '''
+                        mkdir -p trivy-reports
+                        
                         echo "🔍 Running Trivy scan..."
                         docker run --rm \
                             -v /var/run/docker.sock:/var/run/docker.sock \
