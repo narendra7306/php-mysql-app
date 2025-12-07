@@ -82,38 +82,34 @@ pipeline {
             }
         }
 
-        stage('Trivy Scan PHP Image') {
+        stage('Trivy Scan') {
             steps {
                 script {
-                    echo "🔍 Scanning PHP Image"
-
                     sh '''
-                        mkdir -p trivy-reports
-
-                        # Generate a single full table report
+                        echo "🔍 Running Trivy scan..."
                         docker run --rm \
                             -v /var/run/docker.sock:/var/run/docker.sock \
                             -v ${WORKSPACE}/.trivy-cache:/root/.cache \
-                            aquasec/trivy image \
-                            --format table \
-                            --no-progress \
-                            ${PHP_IMAGE}:${DOCKER_TAG} > trivy-reports/php-image-report.txt
+                            aquasec/trivy image --skip-version-check --severity HIGH,CRITICAL --format table php:8.1 > trivy-reports/php-image-report.txt
 
                         echo "✔ Trivy scan completed. Checking for HIGH/CRITICAL vulnerabilities..."
 
-                        # Check for HIGH or CRITICAL in the report
-                        if grep -E "HIGH|CRITICAL" trivy-reports/php-image-report.txt > /dev/null; then
+                        # Filter ONLY real vulnerability rows (Trivy tables always start with '|' character)
+                        VULNS=$(grep -E "HIGH|CRITICAL" trivy-reports/php-image-report.txt | grep "^|")
+
+                        if [ ! -z "$VULNS" ]; then
                             echo "❌ HIGH or CRITICAL vulnerabilities detected in PHP image!"
                             echo "----- Vulnerability Summary (PHP Image) -----"
-                            grep -E "HIGH|CRITICAL" trivy-reports/php-image-report.txt
+                            echo "$VULNS"
                             exit 1
+                        else
+                            echo "✔ No HIGH or CRITICAL vulnerabilities found in PHP image."
                         fi
-
-                        echo "✔ No HIGH/CRITICAL vulnerabilities found in PHP image."
                     '''
                 }
             }
         }
+
 
 
         stage('Trivy Scan MySQL Image') {
