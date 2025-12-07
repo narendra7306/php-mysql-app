@@ -82,35 +82,44 @@ pipeline {
             }
         }
 
-        stage('Trivy Scan') {
+        stage('Trivy Scan PHP Image') {
             steps {
                 script {
-                    sh '''
-                        mkdir -p trivy-reports
+                    echo "🔍 Scanning PHP Image for vulnerabilities..."
 
-                        echo "🔍 Running Trivy scan..."
-                        docker run --rm \
-                            -v /var/run/docker.sock:/var/run/docker.sock \
-                            -v ${WORKSPACE}/.trivy-cache:/root/.cache \
-                            aquasec/trivy image --skip-version-check --severity HIGH,CRITICAL --format csv php:8.1 > trivy-reports/php-image-report.csv
+                    sh """
+                    mkdir -p trivy-reports
 
-                        echo "✔ Trivy scan completed. Checking for HIGH/CRITICAL vulnerabilities..."
+                    docker run --rm \
+                    -v /var/run/docker.sock:/var/run/docker.sock \
+                    -v \$WORKSPACE/.trivy-cache:/root/.cache \
+                    -v \$WORKSPACE/trivy-ascii.tpl:/tmp/trivy-ascii.tpl \
+                    aquasec/trivy image \
+                    --skip-version-check \
+                    --severity HIGH,CRITICAL \
+                    --format template \
+                    --template @/tmp/trivy-ascii.tpl \
+                    --output trivy-reports/php-image-report.txt \
+                    php:8.1
+                    """
 
-                        # Filter ONLY real vulnerability rows (Trivy tables always start with '|' character)
-                        VULNS=$(grep -E "HIGH|CRITICAL" trivy-reports/php-image-report.csv | grep "^|")
+                    echo "✔ Trivy scan completed. Checking for HIGH/CRITICAL vulnerabilities..."
 
-                        if [ ! -z "$VULNS" ]; then
-                            echo "❌ HIGH or CRITICAL vulnerabilities detected in PHP image!"
-                            echo "----- Vulnerability Summary (PHP Image) -----"
-                            echo "$VULNS"
-                            exit 1
-                        else
-                            echo "✔ No HIGH or CRITICAL vulnerabilities found in PHP image."
-                        fi
-                    '''
+                    def hasHighCritical = sh(
+                        script: "grep -E 'HIGH|CRITICAL' trivy-reports/php-image-report.txt || true",
+                        returnStdout: true
+                    ).trim()
+
+                    if (hasHighCritical) {
+                        echo "❌ High/Critical vulnerabilities detected!"
+                        echo "----- Vulnerability Summary -----"
+                        echo hasHighCritical
+                        error("Failing pipeline due to HIGH/CRITICAL vulnerabilities")
+                    }
                 }
             }
         }
+
 
 
 
