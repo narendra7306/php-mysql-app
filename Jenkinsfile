@@ -88,19 +88,20 @@ pipeline {
                     echo "🔍 Scanning PHP Image"
 
                     sh '''
-                        mkdir -p trivy-reports   # ← Create folder
+                        mkdir -p trivy-reports
 
+                        # Generate TABLE format report
                         docker run --rm \
                         -v /var/run/docker.sock:/var/run/docker.sock \
                         -v ${WORKSPACE}/trivy-reports:/reports \
-                        -v ${WORKSPACE}/.trivy-cache:/root/.cache/ \
-                        aquasec/trivy image --format json --output /reports/php-image-report.json \
-                        ${PHP_IMAGE}:${DOCKER_TAG}  # ← Generate JSON report
+                        -v ${WORKSPACE}/.trivy-cache:/root/.cache \
+                        aquasec/trivy image --format table --output /reports/php-image-report.txt \
+                        ${PHP_IMAGE}:${DOCKER_TAG}
 
-                        # Fail only on critical vulnerabilities
+                        # Critical vulnerability check
                         docker run --rm \
                         -v /var/run/docker.sock:/var/run/docker.sock \
-                        -v ${WORKSPACE}/.trivy-cache:/root/.cache/ \
+                        -v ${WORKSPACE}/.trivy-cache:/root/.cache \
                         aquasec/trivy image --severity CRITICAL --exit-code 1 --no-progress ${PHP_IMAGE}:${DOCKER_TAG} || true
                     '''
                 }
@@ -113,19 +114,20 @@ pipeline {
                     echo "🔍 Scanning MySQL Image"
 
                     sh '''
-                        mkdir -p trivy-reports   # ← Ensure folder exists
+                        mkdir -p trivy-reports
 
+                        # Generate TABLE format report
                         docker run --rm \
                         -v /var/run/docker.sock:/var/run/docker.sock \
                         -v ${WORKSPACE}/trivy-reports:/reports \
-                        -v ${WORKSPACE}/.trivy-cache:/root/.cache/ \
-                        aquasec/trivy image --format json --output /reports/mysql-image-report.json \
-                        ${MYSQL_IMAGE}:${DOCKER_TAG}  # ← Generate JSON report
+                        -v ${WORKSPACE}/.trivy-cache:/root/.cache \
+                        aquasec/trivy image --format table --output /reports/mysql-image-report.txt \
+                        ${MYSQL_IMAGE}:${DOCKER_TAG}
 
-                        # Fail only on critical vulnerabilities
+                        # Critical vulnerability check
                         docker run --rm \
                         -v /var/run/docker.sock:/var/run/docker.sock \
-                        -v ${WORKSPACE}/.trivy-cache:/root/.cache/ \
+                        -v ${WORKSPACE}/.trivy-cache:/root/.cache \
                         aquasec/trivy image --severity CRITICAL --exit-code 1 --no-progress ${MYSQL_IMAGE}:${DOCKER_TAG} || true
                     '''
                 }
@@ -159,7 +161,7 @@ pipeline {
 
     post {
         always {
-            archiveArtifacts artifacts: 'trivy-reports/*.json', fingerprint: true   // ← Export reports
+            archiveArtifacts artifacts: 'trivy-reports/*.txt', fingerprint: true
             cleanWs()
         }
     }
