@@ -90,23 +90,31 @@ pipeline {
                     sh '''
                         mkdir -p trivy-reports
 
-                        # Generate TABLE format report
+                        # Generate a single full table report
                         docker run --rm \
-                        -v /var/run/docker.sock:/var/run/docker.sock \
-                        -v ${WORKSPACE}/trivy-reports:/reports \
-                        -v ${WORKSPACE}/.trivy-cache:/root/.cache \
-                        aquasec/trivy image --format table --output /reports/php-image-report.txt \
-                        ${PHP_IMAGE}:${DOCKER_TAG}
+                            -v /var/run/docker.sock:/var/run/docker.sock \
+                            -v ${WORKSPACE}/.trivy-cache:/root/.cache \
+                            aquasec/trivy image \
+                            --format table \
+                            --no-progress \
+                            ${PHP_IMAGE}:${DOCKER_TAG} > trivy-reports/php-image-report.txt
 
-                        # Critical vulnerability check
-                        docker run --rm \
-                        -v /var/run/docker.sock:/var/run/docker.sock \
-                        -v ${WORKSPACE}/.trivy-cache:/root/.cache \
-                        aquasec/trivy image --severity CRITICAL --exit-code 1 --no-progress ${PHP_IMAGE}:${DOCKER_TAG} || true
+                        echo "✔ Trivy scan completed. Checking for HIGH/CRITICAL vulnerabilities..."
+
+                        # Check for HIGH or CRITICAL in the report
+                        if grep -E "HIGH|CRITICAL" trivy-reports/php-image-report.txt > /dev/null; then
+                            echo "❌ HIGH or CRITICAL vulnerabilities detected in PHP image!"
+                            echo "----- Vulnerability Summary (PHP Image) -----"
+                            grep -E "HIGH|CRITICAL" trivy-reports/php-image-report.txt
+                            exit 1
+                        fi
+
+                        echo "✔ No HIGH/CRITICAL vulnerabilities found in PHP image."
                     '''
                 }
             }
         }
+
 
         stage('Trivy Scan MySQL Image') {
             steps {
@@ -116,23 +124,31 @@ pipeline {
                     sh '''
                         mkdir -p trivy-reports
 
-                        # Generate TABLE format report
+                        # Generate a single full table report
                         docker run --rm \
-                        -v /var/run/docker.sock:/var/run/docker.sock \
-                        -v ${WORKSPACE}/trivy-reports:/reports \
-                        -v ${WORKSPACE}/.trivy-cache:/root/.cache \
-                        aquasec/trivy image --format table --output /reports/mysql-image-report.txt \
-                        ${MYSQL_IMAGE}:${DOCKER_TAG}
+                            -v /var/run/docker.sock:/var/run/docker.sock \
+                            -v ${WORKSPACE}/.trivy-cache:/root/.cache \
+                            aquasec/trivy image \
+                            --format table \
+                            --no-progress \
+                            ${MYSQL_IMAGE}:${DOCKER_TAG} > trivy-reports/mysql-image-report.txt
 
-                        # Critical vulnerability check
-                        docker run --rm \
-                        -v /var/run/docker.sock:/var/run/docker.sock \
-                        -v ${WORKSPACE}/.trivy-cache:/root/.cache \
-                        aquasec/trivy image --severity CRITICAL --exit-code 1 --no-progress ${MYSQL_IMAGE}:${DOCKER_TAG} || true
+                        echo "✔ Trivy scan completed. Checking for HIGH/CRITICAL vulnerabilities..."
+
+                        # Check for HIGH or CRITICAL in the report
+                        if grep -E "HIGH|CRITICAL" trivy-reports/mysql-image-report.txt > /dev/null; then
+                            echo "❌ HIGH or CRITICAL vulnerabilities detected in MySQL image!"
+                            echo "----- Vulnerability Summary (MySQL Image) -----"
+                            grep -E "HIGH|CRITICAL" trivy-reports/mysql-image-report.txt
+                            exit 1
+                        fi
+
+                        echo "✔ No HIGH/CRITICAL vulnerabilities found in MySQL image."
                     '''
                 }
             }
         }
+
 
         stage('Push Docker Images') {
             agent {
