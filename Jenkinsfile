@@ -140,9 +140,9 @@ pipeline {
 
                         echo "✔ Checking for HIGH/CRITICAL vulnerabilities in MySQL image..."
 
-                        if grep -E "HIGH|CRITICAL" trivy-reports/mysql-image-report.txt > /dev/null; then
+                        if grep -E "HIGH|CRITICAL" trivy-reports/mysql-image-report.html > /dev/null; then
                             echo "❌ High/Critical vulnerabilities detected in MySQL image!"
-                            grep -E "HIGH|CRITICAL" trivy-reports/mysql-image-report.txt
+                            grep -E "HIGH|CRITICAL" trivy-reports/mysql-image-report.html
                             exit 1
                         fi
 
@@ -182,7 +182,7 @@ pipeline {
 
     post {
         always {
-            archiveArtifacts artifacts: 'trivy-reports/*.txt', fingerprint: true
+            archiveArtifacts artifacts: 'trivy-reports/*.html', fingerprint: true
             cleanWs()
         }
     }
