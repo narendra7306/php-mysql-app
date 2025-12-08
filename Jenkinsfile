@@ -90,6 +90,9 @@ pipeline {
                     sh '''
                         mkdir -p trivy-reports
 
+                        # Run Trivy and preserve exit code even when using "tee"
+                        set -o pipefail
+
                         docker run --rm \
                             -v /var/run/docker.sock:/var/run/docker.sock \
                             -v ${WORKSPACE}/.trivy-cache:/root/.cache \
@@ -101,12 +104,19 @@ pipeline {
                                 --exit-code 1 \
                                 php:8.2 \
                                 | tee trivy-reports/php-image-report.txt
+
+                        # Fail pipeline if Trivy exited with non-zero status
+                        if [ $? -ne 0 ]; then
+                            echo "❌ HIGH/CRITICAL vulnerabilities found in PHP image!"
+                            exit 1
+                        fi
                     '''
 
                     echo "✔ No HIGH/CRITICAL vulnerabilities found in PHP image."
                 }
             }
         }
+
 
 
 
