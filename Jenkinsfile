@@ -126,7 +126,8 @@ pipeline {
                             aquasec/trivy image \
                                 --format table \
                                 --no-progress \
-                                ${MYSQL_IMAGE}:${DOCKER_TAG} > /reports/mysql-image-report.txt
+                                ${MYSQL_IMAGE}:${DOCKER_TAG} \
+                                | tee trivy-reports/mysql-image-report.txt
 
                         echo "✔ Checking for HIGH/CRITICAL vulnerabilities in MySQL image..."
 
@@ -141,6 +142,7 @@ pipeline {
                 }
             }
         }
+
 
 
 
