@@ -85,7 +85,7 @@ pipeline {
         stage('Trivy Scan PHP Image') {
             steps {
                 script {
-                    echo "🔍 Scanning PHP Image (TABLE format, immediate fail)..."
+                    echo "🔍 Scanning PHP Image (TABLE + immediate fail)..."
 
                     sh '''
                         mkdir -p trivy-reports
@@ -99,13 +99,15 @@ pipeline {
                                 --no-progress \
                                 --severity HIGH,CRITICAL \
                                 --exit-code 1 \
-                                php:8.1 > /reports/php-image-report.txt
-
-                        echo "✔ No HIGH/CRITICAL vulnerabilities found in PHP image."
+                                php:8.1 \
+                                | tee trivy-reports/php-image-report.txt
                     '''
+
+                    echo "✔ No HIGH/CRITICAL vulnerabilities found in PHP image."
                 }
             }
         }
+
 
 
 
