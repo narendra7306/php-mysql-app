@@ -85,7 +85,7 @@ pipeline {
         stage('Trivy Scan PHP Image') {
             steps {
                 script {
-                    echo "🔍 Scanning PHP Image for vulnerabilities..."
+                    echo "🔍 Scanning PHP Image for vulnerabilities (TABLE format)..."
 
                     sh """
                     mkdir -p trivy-reports
@@ -93,34 +93,35 @@ pipeline {
                     docker run --rm \
                     -v /var/run/docker.sock:/var/run/docker.sock \
                     -v \$WORKSPACE/.trivy-cache:/root/.cache \
-                    -v \$WORKSPACE/trivy-ascii.tpl:/tmp/trivy-ascii.tpl \
-                    -v \$WORKSPACE/trivy-reports:/reports \
                     aquasec/trivy image \
                     --skip-version-check \
                     --severity HIGH,CRITICAL \
-                    --format template \
-                    --template @/tmp/trivy-ascii.tpl \
-                    --output /reports/php-image-report.txt \
+                    --format table \
+                    --output trivy-reports/php-image-report.txt \
                     php:8.1
                     """
 
                     echo "✔ Trivy scan completed. Checking for HIGH/CRITICAL vulnerabilities..."
 
-                    def hasHighCritical = sh(
-                        script: "grep -E 'HIGH|CRITICAL' trivy-reports/php-image-report.txt || true",
+                    // Detect ONLY actual vulnerability rows, avoiding table headers
+                    def highCrit = sh(
+                        script: """
+                            grep -E '^[a-zA-Z0-9._-]+.*(HIGH|CRITICAL)' trivy-reports/php-image-report.txt || true
+                        """,
                         returnStdout: true
                     ).trim()
 
-                    if (hasHighCritical) {
+                    if (highCrit) {
                         echo "❌ High/Critical vulnerabilities detected!"
-                        echo "----- Vulnerability Summary (PHP) -----"
-                        echo hasHighCritical
-                        error("Failing pipeline due to HIGH/CRITICAL vulnerabilities")
+                        echo "----- Vulnerability Summary (PHP Image) -----"
+                        echo highCrit
+                        error("❌ Pipeline failed due to HIGH/CRITICAL vulnerabilities")
+                    } else {
+                        echo "✅ No HIGH or CRITICAL vulnerabilities found in PHP image."
                     }
                 }
             }
         }
-
 
 
 
