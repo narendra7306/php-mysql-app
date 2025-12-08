@@ -98,14 +98,13 @@ pipeline {
                             aquasec/trivy image \
                                 --format table \
                                 --no-progress \
-                                --severity HIGH,CRITICAL \
-                                php:8.2 \
-                                | tee trivy-reports/php-image-report.txt
+                                ${PHP_IMAGE}:${DOCKER_TAG} \
+                                | tee trivy-reports/php-image-report.html
                     '''
 
                     // 🔥 Fail the pipeline if HIGH or CRITICAL found in report
                     sh '''
-                        if grep -qE "HIGH|CRITICAL" trivy-reports/php-image-report.txt; then
+                        if grep -qE "HIGH|CRITICAL" trivy-reports/php-image-report.html; then
                             echo "❌ HIGH/CRITICAL vulnerabilities found in PHP image!"
                             exit 1
                         else
