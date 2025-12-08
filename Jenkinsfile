@@ -99,7 +99,7 @@ pipeline {
                                 --no-progress \
                                 --severity HIGH,CRITICAL \
                                 --exit-code 1 \
-                                php:8.1 \
+                                php:8.2 \
                                 | tee trivy-reports/php-image-report.txt
                     '''
 
