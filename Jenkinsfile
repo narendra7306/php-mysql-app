@@ -99,12 +99,12 @@ pipeline {
                                 --format table \
                                 --no-progress \
                                 ${PHP_IMAGE}:${DOCKER_TAG} \
-                                | tee trivy-reports/php-image-report.txt
+                                | tee trivy-reports/php-image-report.json
                     '''
 
                     // 🔥 Fail the pipeline if HIGH or CRITICAL found in report
                     sh '''
-                        if grep -qE "HIGH|CRITICAL" trivy-reports/php-image-report.txt; then
+                        if grep -qE "HIGH|CRITICAL" trivy-reports/php-image-report.json; then
                             echo "❌ HIGH/CRITICAL vulnerabilities found in PHP image!"
                             exit 1
                         else
@@ -134,13 +134,13 @@ pipeline {
                                 --format table \
                                 --no-progress \
                                 ${MYSQL_IMAGE}:${DOCKER_TAG} \
-                                | tee trivy-reports/mysql-image-report.txt
+                                | tee trivy-reports/mysql-image-report.json
 
                         echo "✔ Checking for HIGH/CRITICAL vulnerabilities in MySQL image..."
 
-                        if grep -E "HIGH|CRITICAL" trivy-reports/mysql-image-report.txt > /dev/null; then
+                        if grep -E "HIGH|CRITICAL" trivy-reports/mysql-image-report.json > /dev/null; then
                             echo "❌ High/Critical vulnerabilities detected in MySQL image!"
-                            grep -E "HIGH|CRITICAL" trivy-reports/mysql-image-report.txt
+                            grep -E "HIGH|CRITICAL" trivy-reports/mysql-image-report.json
                             exit 1
                         fi
 
@@ -180,7 +180,7 @@ pipeline {
 
     post {
         always {
-            archiveArtifacts artifacts: 'trivy-reports/*.txt', fingerprint: true
+            archiveArtifacts artifacts: 'trivy-reports/*.json', fingerprint: true
             cleanWs()
         }
     }
