@@ -99,12 +99,12 @@ pipeline {
                                 --format table \
                                 --no-progress \
                                 ${PHP_IMAGE}:${DOCKER_TAG} \
-                                | tee trivy-reports/php-image-report.html
+                                | tee trivy-reports/php-image-report.txt
                     '''
 
                     // 🔥 Fail the pipeline if HIGH or CRITICAL found in report
                     sh '''
-                        if grep -qE "HIGH|CRITICAL" trivy-reports/php-image-report.html; then
+                        if grep -qE "HIGH|CRITICAL" trivy-reports/php-image-report.txt; then
                             echo "❌ HIGH/CRITICAL vulnerabilities found in PHP image!"
                             exit 1
                         else
@@ -114,8 +114,6 @@ pipeline {
                 }
             }
         }
-
-
 
 
 
@@ -140,9 +138,9 @@ pipeline {
 
                         echo "✔ Checking for HIGH/CRITICAL vulnerabilities in MySQL image..."
 
-                        if grep -E "HIGH|CRITICAL" trivy-reports/mysql-image-report.html > /dev/null; then
+                        if grep -E "HIGH|CRITICAL" trivy-reports/mysql-image-report.txt > /dev/null; then
                             echo "❌ High/Critical vulnerabilities detected in MySQL image!"
-                            grep -E "HIGH|CRITICAL" trivy-reports/mysql-image-report.html
+                            grep -E "HIGH|CRITICAL" trivy-reports/mysql-image-report.txt
                             exit 1
                         fi
 
@@ -182,7 +180,7 @@ pipeline {
 
     post {
         always {
-            archiveArtifacts artifacts: 'trivy-reports/*.html', fingerprint: true
+            archiveArtifacts artifacts: 'trivy-reports/*.txt', fingerprint: true
             cleanWs()
         }
     }
