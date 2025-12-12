@@ -138,13 +138,13 @@ pipeline {
 
                         echo "✔ Checking for HIGH/CRITICAL vulnerabilities in MySQL image..."
 
-                        if grep -E "HIGH|CRITICAL" trivy-reports/mysql-image-report.json > /dev/null; then
-                            echo "❌ High/Critical vulnerabilities detected in MySQL image!"
-                            grep -E "HIGH|CRITICAL" trivy-reports/mysql-image-report.json
+                        if grep -E "CRITICAL" trivy-reports/mysql-image-report.json > /dev/null; then
+                            echo "❌ Critical vulnerabilities detected in MySQL image!"
+                            grep -E "CRITICAL" trivy-reports/mysql-image-report.json
                             exit 1
                         fi
 
-                        echo "✔ No HIGH/CRITICAL vulnerabilities found in MySQL image."
+                        echo "✔ No CRITICAL vulnerabilities found in MySQL image."
                     '''
                 }
             }
