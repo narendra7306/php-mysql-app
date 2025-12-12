@@ -1,11 +1,10 @@
-FROM mysql:8.0
+FROM ubuntu/mysql:8.0-24.04_edge
 
 # Set environment variables
 
 ENV MYSQL_DATABASE=devopsdb
 
-RUN microdnf update -y && microdnf upgrade -y && microdnf clean all
-
+RUN apt-get update -y && apt-get upgrade -y && apt-get clean
 
 # Copy the SQL file into the container's init folder
 COPY backup.sql /docker-entrypoint-initdb.d/
