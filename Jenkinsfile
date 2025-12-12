@@ -131,16 +131,16 @@ pipeline {
                             -v ${WORKSPACE}/.trivy-cache:/root/.cache \
                             -v ${WORKSPACE}/trivy-reports:/reports \
                             aquasec/trivy image \
-                                --format table \
+                                --format json \
                                 --no-progress \
                                 ${MYSQL_IMAGE}:${DOCKER_TAG} \
                                 | tee trivy-reports/mysql-image-report.json
 
                         echo "✔ Checking for HIGH/CRITICAL vulnerabilities in MySQL image..."
 
-                        if grep -E "CRITICAL" trivy-reports/mysql-image-report.json > /dev/null; then
+                        if grep -qE "CRITICAL" trivy-reports/mysql-image-report.json > /dev/null; then
                             echo "❌ Critical vulnerabilities detected in MySQL image!"
-                            grep -E "CRITICAL" trivy-reports/mysql-image-report.json
+                            grep -qE "CRITICAL" trivy-reports/mysql-image-report.json
                             exit 1
                         fi
 
