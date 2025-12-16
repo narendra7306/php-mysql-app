@@ -19,6 +19,12 @@ imagePullSecrets: []
 nameOverride: ""
 fullnameOverride: ""
 
+
+env:
+  MYSQL_ROOT_PASSWORD: root123
+  MYSQL_DATABASE: devopsdb
+
+
 # This section builds out the service account more information can be found here: https://kubernetes.io/docs/concepts/security/service-accounts/
 serviceAccount:
   # Specifies whether a service account should be created.
