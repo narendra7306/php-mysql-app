@@ -1,0 +1,17 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: php-config
+  labels:
+    app.kubernetes.io/name: {{ .Chart.Name }}
+    app.kubernetes.io/instance: {{ .Release.Name }}
+data:
+  config.ini: |
+    [database]
+    hostname = {{ .Values.env.DB_HOST }}
+    username = {{ .Values.env.DB_USER }}
+    password = {{ .Values.env.DB_PASSWORD }}
+    dbname = {{ .Values.env.DB_NAME }}
+
+    [environment]
+    environment = {{ .Values.env.ENV_NAME }}
