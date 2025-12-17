@@ -21,11 +21,12 @@ fullnameOverride: ""
 
 
 env:
-  DB_HOST: mysql
-  DB_USER: devops
-  DB_PASSWORD: devops123
-  DB_NAME: devopsdb
-  ENV_NAME: Dev
+  DB_HOST: mysql-backend.backend.svc.cluster.local
+  DB_USER: root
+  DB_PASSWORD: mypassword
+  DB_NAME: mydb
+  ENV_NAME: dev
+
 
 
 # This section builds out the service account more information can be found here: https://kubernetes.io/docs/concepts/security/service-accounts/
