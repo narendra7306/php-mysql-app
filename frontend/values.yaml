@@ -21,12 +21,11 @@ fullnameOverride: ""
 
 
 env:
-  DBHOST=mysql-backend.backend.svc.cluster.local
-  SQLUSER=devops
-  SQLPASSWORD=devops123
-  SQLDBNAME=mydb
-  ENVNAME=dev
-
+  DB_HOST: "mysql-backend.backend.svc.cluster.local"
+  DB_USER: "devops"
+  DB_PASSWORD: "devops123"
+  DB_NAME: "mydb"
+  ENV_NAME: "dev"
 
 
 

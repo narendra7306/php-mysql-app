@@ -45,17 +45,10 @@ spec:
               containerPort: {{ .Values.service.port }}
               protocol: TCP
           env:
-            - name: DB_HOST
-              value: {{ .Values.env.DB_HOST }}
-            - name: DB_USER
-              value: {{ .Values.env.DB_USER }}
-            - name: DB_PASSWORD
-              value: {{ .Values.env.DB_PASSWORD }}
-            - name: DB_NAME
-              value: {{ .Values.env.DB_NAME }}
-            - name: ENV_NAME
-              value: {{ .Values.env.ENV_NAME }}
-
+          {{- range $key, $value := .Values.env }}
+            - name: {{ $key }}
+              value: {{ $value | quote }}
+          {{- end }}
 
           {{- with .Values.livenessProbe }}
           livenessProbe:
