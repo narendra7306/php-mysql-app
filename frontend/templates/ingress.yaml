@@ -42,7 +42,7 @@ spec:
 
 
           # 🔹 Hardcoded Tomcat path
-          - path: /tomcat
+          - path: /myapp
             pathType: Prefix
             backend:
               service:
