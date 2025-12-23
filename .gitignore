@@ -1,0 +1,4 @@
+# SSL certificates & private keys
+*.key
+*.crt
+*.pem
