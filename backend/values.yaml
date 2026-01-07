@@ -162,3 +162,21 @@ nodeSelector: {}
 tolerations: []
 
 affinity: {}
+
+
+extraContainers:
+  - name: mysqld-exporter
+    image: prom/mysqld-exporter:v0.14.0
+    ports:
+      - name: metrics
+        containerPort: 9104
+    env:
+      - name: DATA_SOURCE_NAME
+        value: "exporter:exporter123@(localhost:3306)/"
+
+extraServices:
+  - name: mysql-metrics
+    ports:
+      - name: metrics
+        port: 9104
+        targetPort: metrics

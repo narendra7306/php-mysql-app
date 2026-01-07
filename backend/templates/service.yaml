@@ -13,3 +13,23 @@ spec:
       name: {{ .Values.service.name }}
   selector:
     {{- include "backend.selectorLabels" . | nindent 4 }}
+
+{{- range .Values.extraServices }}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ .name }}
+  namespace: {{ $.Release.Namespace }}
+  labels:
+    app: {{ .name }}
+spec:
+  selector:
+    app: {{ .name }}
+  ports:
+    {{- range .ports }}
+    - name: {{ .name }}
+      port: {{ .port }}
+      targetPort: {{ .targetPort }}
+    {{- end }}
+{{- end }}
