@@ -23,10 +23,11 @@ fullnameOverride: ""
 
 env:
   DB_HOST: "mysql-backend.backend.svc.cluster.local"
-  DB_USER: "root"
-  DB_PASSWORD: "root123"
+  DB_USER: "devuser"
+  DB_PASSWORD: "devpass123"
   DB_NAME: "devopsdb"
   ENV_NAME: "dev"
+
 
 
 
