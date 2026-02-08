@@ -64,7 +64,7 @@ securityContext: {}
 service:
   type: ClusterIP
   port: 8888
-  targetPort: 8888
+  targetPort: 80
   protocol: TCP
   name: php
 
