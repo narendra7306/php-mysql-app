@@ -64,7 +64,7 @@ securityContext: {}
 # This is for setting up a service more information can be found here: https://kubernetes.io/docs/concepts/services-networking/service/
 service:
   type: ClusterIP
-  port: 8888
+  port: 80
   targetPort: 80
   protocol: TCP
   name: php
