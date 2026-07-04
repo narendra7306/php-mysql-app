@@ -96,6 +96,8 @@ pipeline {
                             -v ${WORKSPACE}/.trivy-cache:/root/.cache \
                             -v ${WORKSPACE}/trivy-reports:/reports \
                             aquasec/trivy image \
+                                --severity HIGH,CRITICAL \
+                                --ignore-unfixed \
                                 --format json \
                                 --no-progress \
                                 ${PHP_IMAGE}:${DOCKER_TAG} \
