@@ -57,7 +57,7 @@ pipeline {
                           -Dsonar.projectKey=my-php-app \
                           -Dsonar.sources=. \
                           -Dsonar.userHome=${WORKSPACE}/.sonar \
-                          -Dsonar.host.url=http://172.28.47.176:9000 \
+                          -Dsonar.host.url=http://172.17.0.3:9000 \
                           -Dsonar.tests=tests \
                           -Dsonar.php.coverage.reportPaths=coverage.xml \
                           -Dsonar.exclusions=tests/** \
