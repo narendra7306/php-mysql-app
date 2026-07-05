@@ -40,6 +40,9 @@ def update_values_yaml(values_file, image_repo, image_tag):
 
 def git_commit_push(repo_dir, tag):
 
+    run('git config user.name "narendra7306"', cwd=repo_dir)
+    run('git config user.email "narendrareddy0a3@gmail.com"', cwd=repo_dir)
+
     run("git add .", cwd=repo_dir)
 
     status = subprocess.run(
@@ -57,7 +60,7 @@ def git_commit_push(repo_dir, tag):
         cwd=repo_dir
     )
 
-    run("git push origin main", cwd=repo_dir)
+    run("git push origin master", cwd=repo_dir)
 
 
 def main():
@@ -65,7 +68,7 @@ def main():
     parser = argparse.ArgumentParser()
 
     parser.add_argument("--repo-url", required=True)
-    parser.add_argument("--branch", default="main")
+    parser.add_argument("--branch", default="master")
 
     parser.add_argument("--php-image", required=True)
     parser.add_argument("--mysql-image", required=True)
