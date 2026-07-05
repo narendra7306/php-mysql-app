@@ -208,7 +208,7 @@ pipeline {
 
                     sh """
                     python3 publish.py \
-                    --repo-url https://\$GIT_USER:\$GIT_TOKEN@github.com/narendra7306/php-mysql-helm.git \
+                    --repo-url https://\$GIT_USER:\$GIT_TOKEN@github.com/narendra7306/php-mysql-app.git \
                     --php-image ${PHP_IMAGE} \
                     --mysql-image ${MYSQL_IMAGE} \
                     --tag ${DOCKER_TAG}
