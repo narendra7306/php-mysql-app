@@ -178,13 +178,8 @@ pipeline {
                 }
             }
         }
-    }
+    
 
-    post {
-        always {
-            archiveArtifacts artifacts: 'trivy-reports/*.json', fingerprint: true
-            cleanWs()
-        }
 
         stage('Update Helm Repo') {
 
@@ -209,6 +204,15 @@ pipeline {
                 }
             }
        }
+    }
+    
+
+    post {
+        always {
+            archiveArtifacts artifacts: 'trivy-reports/*.json', fingerprint: true
+            cleanWs()
+    
+        }
     }
 }
 
