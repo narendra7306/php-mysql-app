@@ -1,4 +1,4 @@
-FROM ubuntu/mysql:8.0-24.04_edge
+FROM mysql:8.0
 
 # Set environment variables
 
