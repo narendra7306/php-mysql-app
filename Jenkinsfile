@@ -185,5 +185,31 @@ pipeline {
             archiveArtifacts artifacts: 'trivy-reports/*.json', fingerprint: true
             cleanWs()
         }
+
+        stage('Update Helm Repo') {
+
+            steps {
+
+                withCredentials([
+                    usernamePassword(
+                        credentialsId: 'github-creds',
+                        usernameVariable: 'GIT_USER',
+                        passwordVariable: 'GIT_TOKEN'
+                    )
+                ]) {
+
+                    sh """
+                    python3 publish.py \
+                    --repo-url https://\$GIT_USER:\$GIT_TOKEN@github.com/narendra7306/php-mysql-helm.git \
+                    --php-image ${PHP_IMAGE} \
+                    --mysql-image ${MYSQL_IMAGE} \
+                    --tag ${DOCKER_TAG}
+                    """
+
+                }
+            }
+       }
     }
 }
+
+
