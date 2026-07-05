@@ -192,6 +192,12 @@ pipeline {
 
             steps {
 
+                sh '''
+                    apt-get update
+                    apt-get install -y git
+                    pip install --no-cache-dir pyyaml
+                '''
+
                 withCredentials([
                     usernamePassword(
                         credentialsId: 'github-creds',
