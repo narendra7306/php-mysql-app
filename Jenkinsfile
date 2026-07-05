@@ -183,6 +183,13 @@ pipeline {
 
         stage('Update Helm Repo') {
 
+            agent {
+                docker {
+                    image 'python:3.12'
+                    args '-u root'
+                }
+            }
+
             steps {
 
                 withCredentials([
