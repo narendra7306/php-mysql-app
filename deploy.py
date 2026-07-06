@@ -90,12 +90,6 @@ def main():
     parser.add_argument("--repo-url", required=True)
     parser.add_argument("--branch", default="master")
 
-    parser.add_argument("--docker-user", required=True)
-    parser.add_argument("--docker-password", required=True)
-
-    parser.add_argument("--php-local-image", required=True)
-    parser.add_argument("--mysql-local-image", required=True)
-
     parser.add_argument("--php-image", required=True)
     parser.add_argument("--mysql-image", required=True)
 
@@ -121,26 +115,7 @@ def main():
     version = generate_version(args.build_number)
 
     print(f"\nGenerated Version : {version}")
-
-    # Docker Login
-    docker_login(
-        args.docker_user,
-        args.docker_password
-    )
-
-    # Push PHP Image
-    tag_and_push(
-        args.php_local_image,
-        args.php_image,
-        version
-    )
-
-    # Push MySQL Image
-    tag_and_push(
-        args.mysql_local_image,
-        args.mysql_image,
-        version
-    )
+    
 
     # Clone Helm Repository
     repo_dir = "helm-repo"
