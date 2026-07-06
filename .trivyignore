@@ -1,0 +1,3 @@
+# Use a .trivyignore file to temporarily suppress the approved upstream CVE.
+
+CVE-2025-68121
