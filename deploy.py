@@ -27,17 +27,6 @@ def generate_version(build_number):
     return f"v{major}.{minor}.{patch}"
 
 
-# ---------------- Docker ---------------- #
-
-def docker_login(username, password):
-    run(f'echo "{password}" | docker login -u "{username}" --password-stdin')
-
-
-def tag_and_push(local_image, remote_image, tag):
-    run(f"docker tag {local_image}:latest {remote_image}:{tag}")
-    run(f"docker push {remote_image}:{tag}")
-
-
 # ---------------- Git ---------------- #
 
 def clone_repo(repo_url, branch, directory):

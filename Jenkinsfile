@@ -202,11 +202,6 @@ pipeline {
 
                 withCredentials([
                     usernamePassword(
-                        credentialsId: 'dockerhub-credentials',
-                        usernameVariable: 'DOCKER_USER',
-                        passwordVariable: 'DOCKER_PASSWORD'
-                    ),
-                    usernamePassword(
                         credentialsId: 'github-creds',
                         usernameVariable: 'GIT_USER',
                         passwordVariable: 'GIT_TOKEN'
@@ -216,10 +211,6 @@ pipeline {
                     sh """
                     python3 deploy.py \
                     --repo-url https://${GIT_USER}:${GIT_TOKEN}@github.com/narendra7306/php-mysql-app.git \
-                    --docker-user ${DOCKER_USER} \
-                    --docker-password ${DOCKER_PASSWORD} \
-                    --php-local-image php-app:${DOCKER_TAG} \
-                    --mysql-local-image mysql-backend:${DOCKER_TAG} \
                     --php-image ${PHP_IMAGE} \
                     --mysql-image ${MYSQL_IMAGE} \
                     --build-number ${DOCKER_TAG}
