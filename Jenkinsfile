@@ -98,7 +98,7 @@ pipeline {
                                 --ignore-unfixed \
                                 --format json \
                                 --no-progress \
-                                ${PHP_IMAGE}:${DOCKER_TAG} \
+                                ${PHP_IMAGE}:${VERSION} \
                                 | tee trivy-reports/php-image-report.json
                     '''
 
@@ -135,7 +135,7 @@ pipeline {
                                 --severity HIGH,CRITICAL \
                                 --format json \
                                 --no-progress \
-                                ${MYSQL_IMAGE}:${DOCKER_TAG} \
+                                ${MYSQL_IMAGE}:${VERSION} \
                                 | tee trivy-reports/mysql-image-report.json
 
                         echo "✔ Checking for CRITICAL vulnerabilities in MySQL image..."
@@ -211,7 +211,7 @@ pipeline {
                     --repo-url https://${GIT_USER}:${GIT_TOKEN}@github.com/narendra7306/php-mysql-app.git \
                     --php-image ${PHP_IMAGE} \
                     --mysql-image ${MYSQL_IMAGE} \
-                    --build-number ${DOCKER_TAG}
+                    --build-number ${VERSION}
                     """
 
                 }
