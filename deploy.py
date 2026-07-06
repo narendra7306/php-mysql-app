@@ -4,15 +4,41 @@ import argparse
 import os
 import shutil
 import subprocess
-import sys
 import yaml
 
 
 def run(command, cwd=None):
-    """Run shell command."""
     print(f"\n>>> {command}")
     subprocess.run(command, shell=True, cwd=cwd, check=True)
 
+
+# ---------------- Version Generator ---------------- #
+
+def generate_version(build_number):
+    """
+    Semantic Versioning
+    Build 20 -> v20.0.0
+    Build 35 -> v35.0.0
+    """
+    major = int(build_number)
+    minor = 0
+    patch = 0
+
+    return f"v{major}.{minor}.{patch}"
+
+
+# ---------------- Docker ---------------- #
+
+def docker_login(username, password):
+    run(f'echo "{password}" | docker login -u "{username}" --password-stdin')
+
+
+def tag_and_push(local_image, remote_image, tag):
+    run(f"docker tag {local_image}:latest {remote_image}:{tag}")
+    run(f"docker push {remote_image}:{tag}")
+
+
+# ---------------- Git ---------------- #
 
 def clone_repo(repo_url, branch, directory):
 
@@ -30,12 +56,12 @@ def update_values_yaml(values_file, image_repo, image_tag):
         values = yaml.safe_load(f)
 
     values["image"]["repository"] = image_repo
-    values["image"]["tag"] = str(image_tag)
+    values["image"]["tag"] = image_tag
 
     with open(values_file, "w") as f:
         yaml.safe_dump(values, f, default_flow_style=False)
 
-    print("Updated successfully.")
+    print("Updated Successfully")
 
 
 def git_commit_push(repo_dir, tag):
@@ -52,16 +78,21 @@ def git_commit_push(repo_dir, tag):
     )
 
     if status.returncode == 0:
-        print("No changes detected.")
+        print("No Helm changes detected.")
         return
 
     run(
-        f'git commit -m "Update image tags to {tag}"',
+        f'git commit -m "Update image tag to {tag}"',
         cwd=repo_dir
     )
 
-    run("git push origin master", cwd=repo_dir)
+    run(
+        "git push origin master",
+        cwd=repo_dir
+    )
 
+
+# ---------------- Main ---------------- #
 
 def main():
 
@@ -70,10 +101,20 @@ def main():
     parser.add_argument("--repo-url", required=True)
     parser.add_argument("--branch", default="master")
 
+    parser.add_argument("--docker-user", required=True)
+    parser.add_argument("--docker-password", required=True)
+
+    parser.add_argument("--php-local-image", required=True)
+    parser.add_argument("--mysql-local-image", required=True)
+
     parser.add_argument("--php-image", required=True)
     parser.add_argument("--mysql-image", required=True)
 
-    parser.add_argument("--tag", required=True)
+    parser.add_argument(
+        "--build-number",
+        required=True,
+        help="Jenkins BUILD_NUMBER"
+    )
 
     parser.add_argument(
         "--frontend-values",
@@ -87,6 +128,32 @@ def main():
 
     args = parser.parse_args()
 
+    # Generate Semantic Version
+    version = generate_version(args.build_number)
+
+    print(f"\nGenerated Version : {version}")
+
+    # Docker Login
+    docker_login(
+        args.docker_user,
+        args.docker_password
+    )
+
+    # Push PHP Image
+    tag_and_push(
+        args.php_local_image,
+        args.php_image,
+        version
+    )
+
+    # Push MySQL Image
+    tag_and_push(
+        args.mysql_local_image,
+        args.mysql_image,
+        version
+    )
+
+    # Clone Helm Repository
     repo_dir = "helm-repo"
 
     clone_repo(
@@ -105,24 +172,32 @@ def main():
         args.backend_values
     )
 
+    # Update Helm Charts
     update_values_yaml(
         frontend_file,
         args.php_image,
-        args.tag
+        version
     )
 
     update_values_yaml(
         backend_file,
         args.mysql_image,
-        args.tag
+        version
     )
 
+    # Commit and Push
     git_commit_push(
         repo_dir,
-        args.tag
+        version
     )
 
-    print("\nHelm repository updated successfully.")
+    print("\n====================================")
+    print("Docker Images Published Successfully")
+    print(f"Version : {version}")
+    print("Helm Charts Updated")
+    print("Git Repository Updated")
+    print("ArgoCD will detect Git changes and automatically sync Kubernetes.")
+    print("====================================")
 
 
 if __name__ == "__main__":
