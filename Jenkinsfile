@@ -4,13 +4,11 @@ pipeline {
     environment {
         SONARQUBE_SERVER = 'SonarQubeServer'
         SONARQUBE_TOKEN  = credentials('sonar-token')
-        DOCKER_TAG       = "${BUILD_NUMBER}"
+        VERSION          = "v${BUILD_NUMBER}.0.0"
         DOCKER_HOST      = "unix:///var/run/docker.sock"
-
         DOCKER_NAMESPACE = "narendra7306"
         PHP_IMAGE        = "${DOCKER_NAMESPACE}/php-app"
         MYSQL_IMAGE      = "${DOCKER_NAMESPACE}/mysql-backend"
-
         DOCKERHUB_CREDENTIALS = credentials('dockerhub-credentials')
         DOCKER_BUILDKIT = "1"
     }
@@ -76,8 +74,8 @@ pipeline {
             }
             steps {
                 sh """
-                    docker build -t ${PHP_IMAGE}:${DOCKER_TAG} -f Dockerfile.app .
-                    docker build -t ${MYSQL_IMAGE}:${DOCKER_TAG} -f Dockerfile.mysql .
+                    docker build -t ${PHP_IMAGE}:${VERSION} -f Dockerfile.app .
+                    docker build -t ${MYSQL_IMAGE}:${VERSION} -f Dockerfile.mysql .
                 """
             }
         }
@@ -166,17 +164,17 @@ pipeline {
             }
             steps {
                 withCredentials([usernamePassword(credentialsId: 'dockerhub-credentials', usernameVariable: 'USERNAME', passwordVariable: 'PASSWORD')]) {
-                    sh """
+                    sh '''
                         echo "$PASSWORD" | docker login -u "$USERNAME" --password-stdin
 
-                        docker push ${PHP_IMAGE}:${DOCKER_TAG}
-                        docker tag ${PHP_IMAGE}:${DOCKER_TAG} ${PHP_IMAGE}:latest
+                        docker push ${PHP_IMAGE}:${VERSION}
+                        docker tag ${PHP_IMAGE}:${VERSION} ${PHP_IMAGE}:latest
                         docker push ${PHP_IMAGE}:latest
 
-                        docker push ${MYSQL_IMAGE}:${DOCKER_TAG}
-                        docker tag ${MYSQL_IMAGE}:${DOCKER_TAG} ${MYSQL_IMAGE}:latest
+                        docker push ${MYSQL_IMAGE}:${VERSION}
+                        docker tag ${MYSQL_IMAGE}:${VERSION} ${MYSQL_IMAGE}:latest
                         docker push ${MYSQL_IMAGE}:latest
-                    """
+                    '''
                 }
             }
         }
