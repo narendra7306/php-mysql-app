@@ -211,7 +211,7 @@ pipeline {
                     --repo-url https://${GIT_USER}:${GIT_TOKEN}@github.com/narendra7306/php-mysql-app.git \
                     --php-image ${PHP_IMAGE} \
                     --mysql-image ${MYSQL_IMAGE} \
-                    --build-number ${VERSION}
+                    --build-number $BUILD_NUMBER
                     """
 
                 }
