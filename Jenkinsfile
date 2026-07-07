@@ -34,8 +34,8 @@ pipeline {
                 sh '''
                     set -eux
 
-                    echo "===== Installing system packages ====="
                     apt-get update
+
                     apt-get install -y \
                         git \
                         unzip \
@@ -43,47 +43,36 @@ pipeline {
                         curl \
                         $PHPIZE_DEPS
 
-                    echo "===== Installing Composer ====="
                     curl -sS https://getcomposer.org/installer | php -- \
                         --install-dir=/usr/local/bin \
                         --filename=composer
 
-                    composer --version
-
-                    echo "===== Installing Xdebug ====="
                     pecl install xdebug
+
                     docker-php-ext-enable xdebug
 
-                    echo "===== Verify PHP ====="
+                    export XDEBUG_MODE=coverage
+
+                    git config --global --add safe.directory /app
+                    git config --global --add safe.directory "$WORKSPACE"
+
                     php -v
 
-                    echo "===== Loaded Extensions ====="
-                    php -m
-
-                    echo "===== Verify Xdebug ====="
                     php -m | grep xdebug
 
-                    echo "===== Installing Composer Dependencies ====="
-                    composer install \
-                        --no-interaction \
-                        --prefer-dist
+                    composer install --no-interaction --prefer-dist
 
-                    echo "===== Running PHPUnit ====="
-                    ./vendor/bin/phpunit \
+                    XDEBUG_MODE=coverage ./vendor/bin/phpunit \
                         --coverage-clover=coverage.xml \
                         --log-junit=junit-report.xml \
                         tests
 
-                    echo "===== Generated Reports ====="
+                    echo "===== Reports ====="
+
                     ls -lh coverage.xml
                     ls -lh junit-report.xml
 
-                    echo "===== Coverage Preview ====="
                     head -20 coverage.xml
-
-                    echo "===== Workspace ====="
-                    pwd
-                    ls -la
                 '''
             }
         }
