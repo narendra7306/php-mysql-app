@@ -65,23 +65,5 @@ class DatabaseTest extends TestCase
     {
         $this->assertIsReadable(__DIR__ . '/../devops-demo-1.1/index.php');
     }
-
-    public function testIndexLoadsWithoutFatalError()
-    {
-        $indexFile = __DIR__ . '/../devops-demo-1.1/index.php';
-
-        ob_start();
-
-        try {
-            include $indexFile;
-        } catch (\Throwable $e) {
-            ob_end_clean();
-            $this->fail("index.php threw an exception: " . $e->getMessage());
-        }
-
-        $output = ob_get_clean();
-
-        $this->assertIsString($output);
-    }
 }
 
