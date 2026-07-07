@@ -52,7 +52,7 @@ pipeline {
                 withSonarQubeEnv("${SONARQUBE_SERVER}") {
                     sh '''
                         sonar-scanner \
-                          -Dsonar.projectKey=my-php-app \
+                          -Dsonar.projectKey=php-app \
                           -Dsonar.sources=. \
                           -Dsonar.userHome=${WORKSPACE}/.sonar \
                           -Dsonar.host.url=http://172.17.0.3:9000 \
