@@ -47,6 +47,8 @@ pipeline {
                         --install-dir=/usr/local/bin \
                         --filename=composer
 
+                    docker-php-ext-install mysqli
+                    
                     pecl install xdebug
 
                     docker-php-ext-enable xdebug
