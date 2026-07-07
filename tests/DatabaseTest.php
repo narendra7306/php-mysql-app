@@ -1,4 +1,5 @@
 <?php
+
 use PHPUnit\Framework\TestCase;
 
 class DatabaseTest extends TestCase
@@ -7,41 +8,41 @@ class DatabaseTest extends TestCase
 
     protected function setUp(): void
     {
-        // Load the config.ini
         $this->config = parse_ini_file(__DIR__ . '/../config.ini');
     }
 
     /**
-     * ✅ Config tests
+     * Config Tests
      */
     public function testConfigHasEnvironment()
     {
-        $this->assertArrayHasKey('ENVNAME', $this->config, "ENVNAME key missing in config.ini");
-        $this->assertNotEmpty($this->config['ENVNAME'], "ENVNAME value is empty in config.ini");
+        $this->assertArrayHasKey('ENVNAME', $this->config);
+        $this->assertNotEmpty($this->config['ENVNAME']);
     }
 
     public function testEnvironmentIsValid()
     {
         $allowed = ['dev', 'test', 'prod'];
-        $this->assertContains($this->config['ENVNAME'], $allowed, "Invalid environment set in config.ini");
+        $this->assertContains($this->config['ENVNAME'], $allowed);
     }
 
     /**
-     * ✅ Version test
+     * Version Test
      */
     public function testAppVersionFormat()
     {
-        $version = "1.1"; // you could load this dynamically if needed
+        $version = "1.1";
         $this->assertMatchesRegularExpression('/^\d+\.\d+$/', $version);
     }
 
     /**
-     * ✅ Basic functionality tests
+     * Basic PHP Tests
      */
     public function testArrayPush()
     {
         $arr = [];
         array_push($arr, "foo");
+
         $this->assertCount(1, $arr);
         $this->assertEquals("foo", $arr[0]);
     }
@@ -50,4 +51,37 @@ class DatabaseTest extends TestCase
     {
         $this->assertStringContainsString("Demo", "DevOps Demo Application");
     }
+
+    /**
+     * Application Tests
+     */
+
+    public function testIndexFileExists()
+    {
+        $this->assertFileExists(__DIR__ . '/../devops-demo-1.1/index.php');
+    }
+
+    public function testIndexFileIsReadable()
+    {
+        $this->assertIsReadable(__DIR__ . '/../devops-demo-1.1/index.php');
+    }
+
+    public function testIndexLoadsWithoutFatalError()
+    {
+        $indexFile = __DIR__ . '/../devops-demo-1.1/index.php';
+
+        ob_start();
+
+        try {
+            include $indexFile;
+        } catch (\Throwable $e) {
+            ob_end_clean();
+            $this->fail("index.php threw an exception: " . $e->getMessage());
+        }
+
+        $output = ob_get_clean();
+
+        $this->assertIsString($output);
+    }
 }
+

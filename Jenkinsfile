@@ -63,9 +63,9 @@ pipeline {
                     composer install --no-interaction --prefer-dist
 
                     XDEBUG_MODE=coverage ./vendor/bin/phpunit \
+                        --configuration phpunit.xml \
                         --coverage-clover=coverage.xml \
                         --log-junit=junit-report.xml \
-                        tests
 
                     echo "===== Reports ====="
 
