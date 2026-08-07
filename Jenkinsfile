@@ -11,6 +11,7 @@ pipeline {
         MYSQL_IMAGE      = "${DOCKER_NAMESPACE}/mysql-backend"
         DOCKERHUB_CREDENTIALS = credentials('dockerhub-credentials')
         DOCKER_BUILDKIT = "1"
+        KUBECONFIG = '/var/jenkins_home/.kube/config'
     }
 
     stages {
@@ -255,6 +256,52 @@ pipeline {
                 }
             }
        }
+
+        stage('Update MySQL Data') {
+            agent {
+                docker {
+                    image 'bitnami/kubectl:latest'
+                    args '-u root -v /var/run/docker.sock:/var/run/docker.sock'
+                }
+            }
+
+            steps {
+                withCredentials([
+                    usernamePassword(
+                        credentialsId: 'mysql-credentials',
+                        usernameVariable: 'MYSQL_USER',
+                        passwordVariable: 'MYSQL_PASSWORD'
+                    )
+                ]) {
+                    sh '''
+                        set -e
+
+                        echo "Checking Kubernetes access..."
+
+                        kubectl get pods -n backend
+
+                        echo "Finding MySQL pod..."
+
+                        MYSQL_POD=$(kubectl get pods \
+                            -n backend \
+                            -l app.kubernetes.io/instance=mysql \
+                            -o jsonpath='{.items[0].metadata.name}')
+
+                        echo "MySQL Pod: $MYSQL_POD"
+
+                        echo "Updating MySQL database..."
+
+                        kubectl exec -n backend "$MYSQL_POD" -- \
+                            env MYSQL_PWD="$MYSQL_PASSWORD" \
+                            mysql \
+                            -u"$MYSQL_USER" \
+                            < database/update.sql
+
+                        echo "MySQL update completed successfully."
+                    '''
+                }
+            }
+        }
     }
     
 
