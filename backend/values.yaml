@@ -41,7 +41,7 @@ httpRoute:
 image:
   pullPolicy: IfNotPresent
   repository: narendra7306/mysql-backend
-  tag: v52.0.0
+  tag: v53.0.0
 imagePullSecrets: []
 ingress:
   annotations: {}
