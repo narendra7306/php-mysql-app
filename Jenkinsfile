@@ -291,10 +291,12 @@ pipeline {
 
                         echo "Updating MySQL database..."
 
-                        kubectl exec -n backend "$MYSQL_POD" -- \
-                            env MYSQL_PWD="$MYSQL_PASSWORD" \
-                            mysql \
-                            -u"$MYSQL_USER" \
+                        kubectl exec -i \
+                            -n backend \
+                            "$MYSQL_POD" \
+                            -c backend \
+                            -- env MYSQL_PWD="$MYSQL_PASSWORD" \
+                            mysql -u"$MYSQL_USER" \
                             < database/update.sql
 
                         echo "MySQL update completed successfully."
