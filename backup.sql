@@ -19,6 +19,23 @@
 -- Table structure for table `dbversion`
 --
 
+-- Create extra ltts database
+CREATE DATABASE IF NOT EXISTS ltts;
+USE ltts;
+
+-- Example table in ltts (optional, adjust as needed)
+CREATE TABLE IF NOT EXISTS users (
+  id INT NOT NULL AUTO_INCREMENT,
+  name VARCHAR(100) NOT NULL,
+  PRIMARY KEY (id)
+);
+
+INSERT INTO users (name) VALUES ('Narendra');
+
+-- Switch back to devopsdb for the dump
+USE devopsdb;
+
+
 DROP TABLE IF EXISTS `dbversion`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!50503 SET character_set_client = utf8mb4 */;
