@@ -292,7 +292,7 @@ pipeline {
 
                         echo "Executing init.sql inside MySQL pod..."
                         kubectl exec -n backend $MYSQL_POD -c backend -- \
-                        env MYSQL_PWD="$MYSQL_PASSWORD" mysql -u"$MYSQL_USER" < /tmp/init.sql
+                        env MYSQL_PWD="$MYSQL_PASSWORD" mysql -u"$MYSQL_USER" < $WORKSPACE/php-app@2/database/init.sql
 
                         echo "MySQL initialization completed successfully."
                     '''
