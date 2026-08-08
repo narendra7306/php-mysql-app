@@ -27,7 +27,7 @@ httpRoute:
 image:
   pullPolicy: IfNotPresent
   repository: narendra7306/php-app
-  tag: v51.0.0
+  tag: v52.0.0
 imagePullSecrets:
 - name: dockerhub-secret
 ingress:
