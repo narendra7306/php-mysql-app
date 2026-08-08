@@ -287,9 +287,6 @@ pipeline {
 
                         echo "MySQL Pod: $MYSQL_POD"
 
-                        echo "Copying init.sql into pod..."
-                        kubectl cp database/init.sql backend/$MYSQL_POD:/tmp/init.sql -c backend
-
                         echo "Executing init.sql inside MySQL pod..."
                         kubectl exec -n backend $MYSQL_POD -c backend -- \
                         env MYSQL_PWD="$MYSQL_PASSWORD" mysql -u"$MYSQL_USER" < $WORKSPACE/database/init.sql
