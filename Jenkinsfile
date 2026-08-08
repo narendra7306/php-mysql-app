@@ -261,7 +261,7 @@ pipeline {
             agent {
                 docker {
                     image 'bitnami/kubectl:latest'
-                    args '-u root -v /var/run/docker.sock:/var/run/docker.sock'
+                    args '--entrypoint="" -u root -v /var/run/docker.sock:/var/run/docker.sock'
                 }
             }
 
