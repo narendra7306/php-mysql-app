@@ -1,13 +1,8 @@
-
 CREATE DATABASE IF NOT EXISTS ltts;
-
 USE ltts;
-
 CREATE TABLE IF NOT EXISTS users (
     id INT AUTO_INCREMENT PRIMARY KEY,
     name VARCHAR(100) NOT NULL
 );
-
 INSERT INTO users (name) VALUES ('Narendra');
-
 SELECT * FROM users;
