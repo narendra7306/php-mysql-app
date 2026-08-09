@@ -18,15 +18,6 @@
 --
 -- Table structure for table `dbversion`
 --
-CREATE DATABASE IF NOT EXISTS markapur;
-USE markapur;
-CREATE TABLE IF NOT EXISTS users (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    name VARCHAR(100) NOT NULL
-);
-INSERT INTO users (name) VALUES ('Nagulavaram');
-
-
 -- Create extra ltts database
 CREATE DATABASE IF NOT EXISTS ltts;
 USE ltts;
