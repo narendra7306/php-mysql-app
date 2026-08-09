@@ -18,18 +18,19 @@
 --
 -- Table structure for table `dbversion`
 --
--- Create extra ltts database
 CREATE DATABASE IF NOT EXISTS ltts;
 USE ltts;
 
--- Example table in ltts (optional, adjust as needed)
 CREATE TABLE IF NOT EXISTS users (
-  id INT NOT NULL AUTO_INCREMENT,
-  name VARCHAR(100) NOT NULL,
-  PRIMARY KEY (id)
+    id INT NOT NULL AUTO_INCREMENT,
+    name VARCHAR(100) NOT NULL,
+    mobile_number VARCHAR(15),
+    mail_id VARCHAR(150),
+    PRIMARY KEY (id)
 );
 
-INSERT INTO users (name) VALUES ('Narendra');
+INSERT INTO users (name, mobile_number, mail_id)
+VALUES ('Narendra', '9988776655', 'narendra123@example.com');
 
 -- Switch back to devopsdb for the dump
 USE devopsdb;
