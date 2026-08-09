@@ -1,0 +1,20 @@
+persistence:
+  enabled: true
+  accessModes:
+    - ReadWriteOnce
+  size: 5Gi
+  storageClassName: standard   # Change to your cluster's storage class
+  type: pvc
+
+adminUser: admin
+adminPassword: admin123        # Change to a secure password
+
+datasources:
+  datasources.yaml:
+    apiVersion: 1
+    datasources:
+      - name: Prometheus
+        type: prometheus
+        url: http://prometheus-server.default.svc.cluster.local
+        access: proxy
+        isDefault: true

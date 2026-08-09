@@ -1,0 +1,16 @@
+server:
+  persistentVolume:
+    enabled: true
+    accessModes:
+      - ReadWriteOnce
+    size: 10Gi
+    storageClass: standard   # Change to your cluster's storage class
+  retention: 7d              # Keep metrics for 7 days
+
+alertmanager:
+  persistentVolume:
+    enabled: true
+    accessModes:
+      - ReadWriteOnce
+    size: 2Gi
+    storageClass: standard
