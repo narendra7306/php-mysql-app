@@ -14,3 +14,9 @@ alertmanager:
       - ReadWriteOnce
     size: 2Gi
     storageClass: standard
+
+kubeStateMetrics:
+  enabled: true
+
+nodeExporter:
+  enabled: true
